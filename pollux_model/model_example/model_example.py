@@ -1,12 +1,10 @@
 from pollux_model.model_abstract import Model
-from pollux_model.model_example.correlation.correlation_example import CorrelationExample
 
 
 class Model1(Model):
     def __init__(self):
         self.parameters = {}
         self.output = {}
-        self.parameter_1 = 'parameter_1_value' # Add any extra parameters needed for the current model
 
     def update_parameters(self, parameters):
         """ To update model parameters
@@ -30,9 +28,19 @@ class Model1(Model):
     def calculate_output(self, u, x):
         """calculate output based on input u and state x"""
 
+        input_model = u['input_key_1']
+
         # OUTPUT calculations
-        # ...
+        output_model = self._internal_function(input_model)
 
         # Assign output to self
-        self.output['output_value_key_1'] = 'output_value_1'
-        self.output['output_value_key_2'] = 'output_value_2'
+        self.output['output_key_1'] = output_model
+
+    def _internal_function(self, input_function):
+        """model function defined internally"""
+        output_function = input_function
+        return output_function
+
+    def get_output(self):
+        """get output of the model"""
+        return self.output
