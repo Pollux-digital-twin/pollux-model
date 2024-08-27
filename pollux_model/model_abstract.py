@@ -13,9 +13,9 @@ class Model(ABC):
         """ Model initialization
         """
         self.parameters = {}
+        self.state = {}
         self.output = {}
 
-    @abstractmethod
     def update_parameters(self, parameters):
         """ To update model parameters
 
@@ -24,7 +24,8 @@ class Model(ABC):
         parameters : dict
             parameters dict as defined by the model
         """
-        pass
+        for key, value in parameters.items():
+            self.parameters[key] = value
 
     @abstractmethod
     def initialize_state(self, x):
@@ -32,16 +33,10 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def update_state(self, u, x):
-        """update the state based on input u and state x"""
+    def calculate_output(self, u):
+        """calculate output based on input u"""
         pass
 
-    @abstractmethod
-    def calculate_output(self, u, x):
-        """calculate output based on input u and state x"""
-        pass
-
-    @abstractmethod
     def get_output(self):
         """get output of the model"""
         return self.output

@@ -12,15 +12,12 @@ class TestESP(unittest.TestCase):
         model_instance = Model1()
         model_instance.update_parameters(param)
 
-        # define the state IF NEEDED
-        x = []
-
         # define the input values
         u = dict()
         u['input_key_1'] = 0.999
 
         # calculate  output
-        model_instance.calculate_output(u, x)
+        model_instance.calculate_output(u)
 
         # get output
         y = model_instance.get_output()
