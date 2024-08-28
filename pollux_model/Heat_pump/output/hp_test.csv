@@ -1,0 +1,29 @@
+,Variable,Value
+0,Cold Temperature Available,[80] °C
+1,Cold Temperature Final,[78.00] °C
+2,Cold Mass Flowrate,11916.077 kg/s
+3,Hot Temperature Desired,[150] °C
+4,Hot Temperature Minimum,[100] °C
+5,Hot Mass Flowrate,990.856 kg/s
+6,Ideal COP Calculated,[5.607]
+7,Selected Refrigerant,R365MFC
+8,Estimated Compressor Efficiency,0.820
+9,Second Law Efficiency,0.500
+10,Carnot Efficiency Factor Flag ,False
+11,Actual COP Calculated,2.384
+12,Process Heat Average,341.21 MMBtu/h
+13,Process Heat Average,100000.00 kW
+14,Utility Rate Average,0.02 $/h/kW
+15,Capacity Factor,-1.000
+16,Project Lifetime,20.00 yr
+17,Power in Average,41953.77 kW
+18,Annual Energy In,41953.77 kWh
+19,Capital Cost Per Unit,300.00 $/kW
+20,Fixed O&M Costs,11.80 $/kW
+21,Variable O&M Costs,0.05 $/MMBtu
+22,Capital Cost,-1.00 $
+23,Year One Energy Costs,-1.00 $/yr
+24,Year One Fixed O&M Costs,-1.00 $/yr
+25,Year One Variable O&M Costs,-1.00 $/yr
+26,Year One Total Operating Costs,-1.00 $/yr
+27,LCOH,-1.00 $/MMMBtu
