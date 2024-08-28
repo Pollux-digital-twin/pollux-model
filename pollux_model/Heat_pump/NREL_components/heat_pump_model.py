@@ -345,6 +345,6 @@ class heat_pump:
         self.calculate_COP()
         self.calculate_energy_and_mass_flow()
         # self.calculate_heat_pump_costs()
-        if self.write_output_file:
-            self.write_output(filename)
+        # if self.write_output_file:
+        #     self.write_output(filename)
 
