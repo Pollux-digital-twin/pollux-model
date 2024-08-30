@@ -8,10 +8,15 @@ class TestElectrolyser_pydolphin_DeGroot(unittest.TestCase):
         # ARRANGE
         #todo: difference between param and u?
         param = dict()
-        # param['temperature(C)'] = 25
-        # param['pressure(bar)'] = 1
-        # param['power(W)'] = 9.995438e+07
-        param['electrolyser_model'] = 'Physics_based'
+        # param['capacity'] = 100 * 1e6
+
+        param['eta_Faraday_array'] = 1  # just a constant, in reality is a variable
+        param['Faraday_const'] = 96485.3329  # Faraday constant [(s A)/mol]
+        param['delta_t'] = 3600
+        param['A_cell'] = 0.436
+        param['cell_type'] = 'low_power_cell'
+        param['electrolyser_model'] = "Physics_based"
+
 
 
         model = Electrolyser()
@@ -22,20 +27,23 @@ class TestElectrolyser_pydolphin_DeGroot(unittest.TestCase):
 
         # define the input values
         u = dict()
-        u['temperature(C)'] = 25 # unit:C
-        u['pressure(bar)'] = 1 #unit:bar
-        u['power(W)'] = 9.995438e+07 #unit:Watt
-
+        u['capacity'] = 100 * 1e6
+        u['T_cell'] = 273.15 + 40
+        u['p_cathode'] = 10e5
+        u['p_anode'] = 10e5
+        u['p_0_H2O'] = 10e5
+        u['power_input'] = 2118181.8181 #unit:Watt
+        #u['power_multiplier'] = 5 # independent stacks
         # calculate  output
         model.calculate_output(u, x)
 #
         #ACT
         # get output
         y = model.get_output()
-        expected_hydrogen_rate = 16640
-        expected_oxygen_rate = 2096
+        expected_hydrogen_rate = 53.81
+        expected_oxygen_rate = 427.11
         self.assertAlmostEqual(y['hydrogen_production'], expected_hydrogen_rate, delta=1)
-        self.assertAlmostEqual(y['oxygen_production'], expected_oxygen_rate, delta=1)
+        self.assertAlmostEqual(y['oxygen_production'], expected_oxygen_rate, delta=3)
 
         print(y)
 

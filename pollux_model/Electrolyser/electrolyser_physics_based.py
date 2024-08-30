@@ -42,7 +42,7 @@ class Electrolyser(Model):
 
     def calculate_output(self, u=0, x=0):
         """calculate output based on input u and state x"""
-        self.output = self.calculate_production_rate()
+        self.output = self.calculate_production_rate(u,x)
 
 
     def get_output(self):
@@ -59,12 +59,12 @@ class Electrolyser(Model):
         if model == 'ML_forrest':
             pass
         elif model == "Physics_based":
-            electrolyser_model = Electrolyser_pydolphin_DeGroot(2118181.8181)
+            electrolyser_model = Electrolyser_pydolphin_DeGroot()
 
 
 
         electrolyser_model.update_parameters(self.parameters)
-        electrolyser_model.calculate_output()
+        electrolyser_model.calculate_output(u,x)
         return electrolyser_model.get_output()
 
 
