@@ -64,6 +64,7 @@ class Electrolyser_pydolphin_DeGroot(Model):
         pass
 
     def calculate_output(self, u=0, x=0):
+        self.calc_prod_rates(u, x)
         self.output['hydrogen_production'] = self.parameters['mass_H2']
         self.output['oxygen_production'] = self.parameters['mass_O2']
 
