@@ -59,7 +59,3 @@ class Electrolyser(Model):
         electrolyser_model.update_parameters(self.parameters)
         electrolyser_model.calculate_output(u, x)
         return electrolyser_model.get_output()
-
-
-if __name__ == '__main__':
-    model = Electrolyser()

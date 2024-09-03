@@ -44,8 +44,3 @@ class TestElectrolyser_pydolphin_DeGroot(unittest.TestCase):
         self.assertAlmostEqual(y['oxygen_production'], expected_oxygen_rate, delta=3)
 
         print(y)
-
-
-# Run the unittest from this file
-if __name__ == '__main__':
-    unittest.main()

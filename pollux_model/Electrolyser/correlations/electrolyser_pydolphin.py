@@ -12,29 +12,6 @@ class Electrolyser_pydolphin_DeGroot(Model):
     def __init__(self, ):
         self.parameters = {}
         self.output = {}
-        # self.capacity = 100 * 1e6
-        # self.cell_type = 'low_power_cell'
-        # if self.cell_type == 'alk_ref_cell':
-        #     self.power_single_cell = 6222
-        # elif self.cell_type == 'low_power_cell':
-        #     self.power_single_cell = 4000
-        # elif self.cell_type == 'medium_power_cell':
-        #     self.power_single_cell = 10000
-        # elif self.cell_type == 'high_power_cell':
-        #     self.power_single_cell = 16000
-
-        # self.eta_Faraday_array = 1  # just a constant, in reality is a variable
-        # self.Faraday_const = 96485.3329  # Faraday constant [(s A)/mol]
-        # self.delta_t = 3600
-        # self.T_cell = 273.15 + 40
-        # self.p_cathode = 10e5
-        # self.p_anode = 10e5
-        # self.p_0_H2O = 10e5
-        #
-        # self.power_input = power_input
-        # self.power_multiplier = 5
-        #
-        # self.parameters['electrolyser_model'] = "Physics_based"
 
     def update_parameters(self, parameters):
         """ To update model parameters
@@ -158,26 +135,3 @@ class Electrolyser_pydolphin_DeGroot(Model):
                        1.168543948 * I_cell_in ** 2 + 1.048496283 * I_cell_in + 1.46667069)
 
         return E_total_cel
-
-
-if __name__ == '__main__':
-    correlation_result = Electrolyser_pydolphin_DeGroot()
-    param = dict()
-    # param['capacity'] = 100 * 1e6
-    param['eta_Faraday_array'] = 1  # just a constant, in reality is a variable
-    param['Faraday_const'] = 96485.3329  # Faraday constant [(s A)/mol]
-    param['delta_t'] = 3600
-    param['A_cell'] = 0.436
-    param['cell_type'] = 'low_power_cell'
-    param['electrolyser_model'] = "Physics_based"
-    correlation_result.update_parameters((param))
-    u = dict()
-    u['capacity'] = 100 * 1e6
-    u['cell_type'] = 'low_power_cell'
-    u['T_cell'] = 273.15 + 40
-    u['p_cathode'] = 10e5
-    u['p_anode'] = 10e5
-    u['p_0_H2O'] = 10e5
-    u['power_input'] = 2 * 2118181.8181
-    res = correlation_result.calculate_output(u)
-    print(correlation_result.output)
