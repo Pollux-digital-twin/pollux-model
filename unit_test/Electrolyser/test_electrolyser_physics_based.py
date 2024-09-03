@@ -6,7 +6,7 @@ class TestElectrolyser_pydolphin_DeGroot(unittest.TestCase):
 
     def test_get_inputs(self):
         # ARRANGE
-        #todo: difference between param and u?
+        # todo: difference between param and u?
         param = dict()
         # param['capacity'] = 100 * 1e6
 
@@ -16,8 +16,6 @@ class TestElectrolyser_pydolphin_DeGroot(unittest.TestCase):
         param['A_cell'] = 0.436
         param['cell_type'] = 'low_power_cell'
         param['electrolyser_model'] = "Physics_based"
-
-
 
         model = Electrolyser()
         model.update_parameters(param)
@@ -32,12 +30,12 @@ class TestElectrolyser_pydolphin_DeGroot(unittest.TestCase):
         u['p_cathode'] = 10e5
         u['p_anode'] = 10e5
         u['p_0_H2O'] = 10e5
-        u['power_input'] = 2118181.8181 #unit:Watt
-        #u['power_multiplier'] = 5 # independent stacks
+        u['power_input'] = 2118181.8181  # unit:Watt
+        # u['power_multiplier'] = 5 # independent stacks
         # calculate  output
         model.calculate_output(u, x)
-#
-        #ACT
+        #
+        # ACT
         # get output
         y = model.get_output()
         expected_hydrogen_rate = 53.81
