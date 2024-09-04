@@ -3,8 +3,7 @@ from pollux_model.model_abstract import Model
 
 class Model1(Model):
     def __init__(self):
-        self.parameters = {}
-        self.output = {}
+        super().__init__()
 
     def initialize_state(self, x):
         """ generate an initial state based on user parameters """

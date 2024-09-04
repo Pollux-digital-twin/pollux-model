@@ -1,66 +1,15 @@
-# Importing Libraries #
-# Libraries below are used to pull from for the Heat Pump model
 import numpy as np
 import yaml
 import pandas as pd
 import math
 from CoolProp.CoolProp import PropsSI
-#
-# current_dir = os.path.dirname(os.path.abspath(__file__))
-# print('cur.dir:',current_dir)
-# utilities_dir = os.path.join(current_dir,"utilities/")
-# print('ut.dir:',utilities_dir)
-#
-# if utilities_dir not in sys.path:
-#     sys.path.append(utilities_dir)
 
-#
-# # Determine the current script directory (currentdir)
-# current_directory = os.path.dirname(os.path.abspath(__file__))
-# print(f"Current script directory: {current_directory}")
-#
-# # Define the path to the utilities directory (currentdir/nrel/utilities)
-# utilities_directory = os.path.join(current_directory,  "utilities")
-# print(f"Utilities directory: {utilities_directory}")
-#
-# # Check if the utilities directory exists
-# if not os.path.exists(utilities_directory):
-#     raise FileNotFoundError(f"The directory '{utilities_directory}' does not exist.")
-#
-# # Add the utilities directory to the Python path
-# if utilities_directory not in sys.path:
-#     sys.path.insert(0, utilities_directory)  # Insert at the beginning of sys.path
-#     print(f"Added '{utilities_directory}' to sys.path")
-#
-# # Check if libraries.py exists in the utilities directory
-# libraries_path = os.path.join(utilities_directory, "libraries.py")
-# if not os.path.isfile(libraries_path):
-#     raise FileNotFoundError(f"The file 'libraries.py' does not exist in '{utilities_directory}'.")
-#
-# # Try importing the libraries module
-# try:
-#     import refrigerants
-#     print("Successfully imported 'libraries' module.")
-# except ImportError as e:
-#     print(f"Failed to import 'libraries': {e}")
-
-
-from pollux_model.Heat_pump.NREL_components.utilities.libraries import (refrigerants,
+from pollux_model.heat_pump.NREL_components.utilities.libraries import (refrigerants,
                                                                         process, working_fluid)
-# from pollux_model.Heat_pump.NREL_components.utilities.refrigerant_properties import *
-from pollux_model.Heat_pump.NREL_components.utilities.unit_defs import ureg, Q_
+from pollux_model.heat_pump.NREL_components.utilities.unit_defs import ureg, Q_
 
 
-# from uncertainties import ufloat as uf
-
-
-# Note: Default values set to -1.0 need to be calculated and are initialized, but will
-# return an error if not calculated first.
-
-# Initialization #
-# This class calls the heat pump model and initializes it to dummy values.
-class heat_pump:
-    # Model Variables
+class HeatPumpModel:
     def __init__(self):
         # 1.COP
         # Outputs
@@ -457,9 +406,6 @@ class heat_pump:
         if self.print_results:
             print('Writing all output to a file')
 
-    def run_all(self, filename):
+    def run_simulation(self):
         self.calculate_COP()
         self.calculate_energy_and_mass_flow()
-        # self.calculate_heat_pump_costs()
-        # if self.write_output_file:
-        #     self.write_output(filename)

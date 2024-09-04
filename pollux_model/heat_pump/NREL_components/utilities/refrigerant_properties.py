@@ -1,12 +1,10 @@
 import math
 import pandas as pd
 import plotly.graph_objects as go
-# import plotly.express as px
 
 import CoolProp
 from CoolProp.CoolProp import PropsSI
 from CoolProp.Plots import PropertyPlot
-# from CoolProp.Plots import SimpleCompressionCycle
 
 ref_list = ['Ammonia', 'R1336MZ', 'Methanol', 'R245', 'R1234ze', 'R1234ze2', 'R1233zd']
 ref_list = ['Ammonia', 'CarbonDioxide', 'Ethanol',
