@@ -1,11 +1,9 @@
 import numpy as np
 import yaml
-import pandas as pd
 import math
 from CoolProp.CoolProp import PropsSI
 
-from pollux_model.heat_pump.NREL_components.utilities.libraries import (refrigerants,
-                                                                        process, working_fluid)
+from pollux_model.heat_pump.NREL_components.utilities.libraries import refrigerants
 from pollux_model.heat_pump.NREL_components.utilities.unit_defs import ureg, Q_
 
 
@@ -20,24 +18,7 @@ class HeatPumpModel:
         # 2.Energy and Mass Flow
         # Outputs
         self.cold_final_temperature = Q_(np.array([-1.0] * 2), 'degC')
-        self.power_in = Q_(np.array([-1.0] * 2), 'kW')  # Gives the
-        # Energy into the heatpump in power
-        self.average_power_in = Q_('-1.0 kW')
-        self.annual_energy_in = Q_('-1.0 MW*hr')
-
-        # 3.Heat Pump Costs
-        # Outputs
-        self.capital_cost = Q_('-1.0 USD')
-        self.year_one_energy_costs = Q_('-1.0 USD/yr')
-        self.year_one_fixed_o_and_m = Q_('-1.0 USD/yr')
-        self.year_one_variable_o_and_m = Q_('-1.0 USD/yr')
-        self.year_one_operating_costs = Q_('-1.0 USD/yr')
-        self.LCOH = Q_('-1.0 USD / MMMBtu')
-        self.capacity_factor = Q_('-1.0')
-
-        self.n_hrs = 8760
-
-        # self.construct_yaml_input_quantities('heatpump_model_inputs.yml')
+        self.power_in = Q_(np.array([-1.0] * 2), 'W')  # Gives the
 
     def construct_yaml_input_quantities(self, file_path):
         with open(file_path, "r") as file_desc:
@@ -55,50 +36,6 @@ class HeatPumpModel:
                 print('Something is wrong with input variable ' + key)
                 quit()
         self.__dict__.update(input_dict)
-
-    def make_input_quantity(self, input_yaml_str):
-        input_dict = yaml.safe_load(input_yaml_str)
-        for key in input_dict:
-            var = input_dict[key]
-            try:
-                if not isinstance(var, dict):
-                    continue
-                else:
-                    quant = Q_(var['val'], var['unit'])
-                input_dict[key] = quant
-            except KeyError:
-                print('Something is wrong with input variable ' + key)
-                quit()
-        self.__dict__.update(input_dict)
-
-    def mysum(self, array_or_float):
-        try:
-            if len(array_or_float.magnitude) > 1.0:
-                return np.sum(array_or_float)
-            else:
-                return self.n_hrs * array_or_float
-        except TypeError:
-            return self.n_hrs * array_or_float
-
-    # This subroutine within the heat pump class Initializes the heat pump to
-    # a process in the process library.
-    # This initialization is not essential as all values can be input individually,
-    # but this module is built to
-    # simplify the building of the models.
-    def initialize_heat_pump(self, sector, process_name):
-        self.hot_temperature_desired = Q_(
-            np.array([process[sector][process_name]['hot_temperature_desired']] * self.n_hrs),
-            'degC')
-        self.hot_temperature_minimum = Q_(
-            np.array([process[sector][process_name]['hot_temperature_minimum']]
-                     * self.n_hrs),
-            'degC')
-        self.hot_specific_heat = Q_(working_fluid
-                                    [process[sector][process_name]['hot_working_fluid']]
-                                    ['specific_heat'],
-                                    'kJ / kg / degK')
-        self.cold_temperature_available = Q_(
-            np.array([process[sector][process_name]['waste_temperature']] * self.n_hrs), 'degC')
 
     # Model Calculations
     # Calculating COP
@@ -248,15 +185,6 @@ class HeatPumpModel:
         if self.print_results:
             print('Calculate Energy and Mass Called')
 
-        # Initializing Temporary Arrays
-        h_hi = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
-        h_ho = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
-        h_ci = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
-        h_co = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
-
-        # Converting MMBTU to kWh/hr (as it is expressed for the full hours of the year)
-        # self.process_heat_requirement_kw = self.process_heat_requirement.to(ureg.kW)
-
         # Calculating the Hot and Cold Mass Flow Parameters
         # Hot
         h_hi = Q_(PropsSI('H', 'T', self.hot_temperature_minimum.to('degK').m,
@@ -266,145 +194,39 @@ class HeatPumpModel:
                           'P', self.hot_pressure.to('Pa').m,
                           self.hot_refrigerant), 'J/kg')
         try:
-            # if (self.hot_mass_flowrate == None) and (self.process_heat_requirement != None):
-
-            # if (self.hot_mass_flowrate == None):
             if math.isnan((float(self.hot_mass_flowrate.to('kg/s').m))):
                 self.hot_mass_flowrate = (
                     (self.process_heat_requirement.to('W') / (h_ho - h_hi)).to('kg/s'))
             else:
 
                 self.process_heat_requirement = (self.hot_mass_flowrate.to('kg/s') *
-                                                 (h_ho - h_hi)).to('kW')
+                                                 (h_ho - h_hi)).to('W')
         except Exception:
             print('Provide either .hot_mass_flowrate or .process_heat_requirement.')
             quit()
 
         # Cold
-        cold_dT_array = self.cold_buffer - self.cold_deltaT
+        cold_dT = self.cold_buffer + self.cold_deltaT
 
         h_ci = Q_(PropsSI('H', 'T',
                           self.cold_temperature_available.to('degK').m,
                           'P', self.cold_pressure.to('Pa').m,
                           self.cold_refrigerant), 'J/kg')
-        self.cold_final_temperature = self.cold_temperature_available - cold_dT_array
+        self.cold_final_temperature = self.cold_temperature_available - cold_dT
         h_co = Q_(PropsSI('H', 'T',
                           self.cold_final_temperature.to('degK').m, 'P',
                           self.cold_pressure.to('Pa').m,
                           self.cold_refrigerant), 'J/kg')
-        self.cold_mass_flowrate = self.process_heat_requirement.to('W') / (h_ci - h_co)
-
-        # Getting average values for reporting
-        self.hot_mass_flowrate_average = np.mean(self.hot_mass_flowrate).to('kg /s')
-
-        if self.print_results:
-            print('Hot Mass Flow Average: {:~.3P}'.format(self.hot_mass_flowrate_average))
-            print('Cold Average Outlet Temperature: {:~.2fP}'.format(np.mean
-                                                                     (self.cold_final_temperature)))
-
+        self.cold_mass_flowrate = (self.process_heat_requirement / (h_ci - h_co)).to('kg/s')
         # Calculating the Work into the heat pump
-        self.power_in = self.process_heat_requirement.to('kW') / self.actual_COP
-        # for i in range(0,8760):
-        #    self.power_in[i] = self.process_heat_requirement_kw[i]/self.actual_COP
-        self.average_power_in = np.mean(self.power_in)
-        self.annual_energy_in = self.mysum(self.power_in * Q_('1 hour')).to('kWh')
-
-        if (self.power_demand.m - self.average_power_in.m) > 10:
-            print('all good')
+        self.power_in = self.process_heat_requirement / self.actual_COP
 
         if self.print_results:
-            print('Average Power Draw of Heat Pump: {:~.3fP}'.format(self.average_power_in))
-            print('Maximum Power Draw of Heat Pump: {:~.3fP}'.format(np.amax(self.power_in)))
-            print('Annual Electricity in: {:,~.1fP}'.format(self.annual_energy_in))
-
-    # Calculating Heat Pump Costs
-    def calculate_heat_pump_costs(self):
-        if self.print_results:
-            print('Calculate Heat Pump Costs')
-        # Heat pump costs are estimated based on the maximum electrical power in.
-        # self.capital_cost = self.specific_capital_cost * max(self.power_in)
-        # Heat pump costs are estimated based on the maximum thermal power required in kW
-
-        self.capital_cost = (self.specific_capital_cost *
-                             np.max(self.process_heat_requirement.to('kW')))
-        self.year_one_fixed_o_and_m = self.fixed_o_and_m_per_size * np.max(
-            self.process_heat_requirement.to('MMBtu/hr')) / Q_('1 yr')
-        self.year_one_fixed_o_and_m = self.year_one_fixed_o_and_m
-        self.year_one_variable_o_and_m = self.variable_o_and_m * self.mysum(
-            self.process_heat_requirement.to('MMBtu/hr') * Q_('1 hr')) / Q_('1 yr')
-        self.year_one_variable_o_and_m = self.year_one_variable_o_and_m
-
-        # Calculating the Capacity Factor
-        self.capacity_factor = self.mysum(self.process_heat_requirement.to('kW')) / (
-                self.n_hrs * np.max(self.process_heat_requirement.to('kW')))
-
-        # Calculating the kWh costs
-        kwh_costs = Q_(np.array([0.0] * self.n_hrs), 'USD')
-        kwh_costs = self.hourly_utility_rate * self.power_in * Q_('1 hr')
-        # Currently demand charges are taken from the largest demand
-        kw_costs = 12 * self.utility_rate * np.amax(self.power_in)  # What is
-        # this 12? What are the units?
-
-        self.year_one_energy_costs = (np.sum(kwh_costs) + kw_costs) / Q_('1 yr')
-        self.year_one_operating_costs = (self.year_one_fixed_o_and_m +
-                                         self.year_one_variable_o_and_m +
-                                         self.year_one_energy_costs)
-        self.year_one_operating_costs = self.year_one_operating_costs
-
-        self.LCOH = (self.capital_cost + self.lifetime * self.year_one_operating_costs) / (
-                self.lifetime * self.mysum(self.process_heat_requirement.to('MMBtu/hr')
-                                           * Q_('1 hr')) / Q_('1 yr'))
-
-        if self.print_results:
-            print('Capital Cost: {:,~.2fP}'.format(self.capital_cost))
-            print('Capacity Factor: {:~.3fP}'.format(self.capacity_factor))
-            print('One Year Fixed O&M Costs: {:,~.2fP}'.format(self.year_one_fixed_o_and_m))
-            print('One Year Variable O&M Costs: {:,~.2fP}'.format(self.year_one_variable_o_and_m))
-            print('One Year Energy Costs: {:,~.2fP}'.format(self.year_one_energy_costs))
-            print('One Year Operating Costs: {:,~.2fP}'.format(self.year_one_operating_costs))
-            print('Lifetime LCOH: {:,~.2fP}'.format(self.LCOH))
-
-    def write_output(self, filename):
-        data = [
-            ['Cold Temperature Available', '{:~.2fP}'.format(self.cold_temperature_available)],
-            ['Cold Temperature Final', '{:~.2fP}'.format(self.cold_final_temperature)],
-            ['Cold Mass Flowrate',
-             '{:~.3fP}'.format(np.mean(self.cold_mass_flowrate).to('kg / s'))],
-            ['Hot Temperature Desired', '{:~.2fP}'.format(self.hot_temperature_desired)],
-            ['Hot Temperature Minimum', '{:~.2fP}'.format(self.hot_temperature_minimum)],
-            ['Hot Mass Flowrate', '{:~.3fP}'.format(self.hot_mass_flowrate_average)],
-            ['Ideal COP Calculated', '{:~.3fP}'.format(self.ideal_COP)],
-            ['Selected Refrigerant', self.refrigerant],
-            ['Estimated Compressor Efficiency', '{:~.3fP}'.format(self.compressor_efficiency)],
-            ['Second Law Efficiency', '{:~.3fP}'.format(self.second_law_efficiency)],
-            ['Carnot Efficiency Factor Flag ', self.second_law_efficiency_flag],
-            ['Actual COP Calculated', '{:~.3fP}'.format(self.actual_COP)],
-            ['Process Heat Average',
-             '{:~.2fP}'.format(np.mean(self.process_heat_requirement.to('MMBtu/hr')))],
-            ['Process Heat Average',
-             '{:~.2fP}'.format(np.mean(self.process_heat_requirement.to('kW')))],
-            ['Utility Rate Average', '{:,~.2fP}'.format(np.mean(self.hourly_utility_rate))],
-            ['Capacity Factor', '{:~.3fP}'.format(np.mean(self.capacity_factor))],
-            ['Project Lifetime', '{:~.2fP}'.format(self.lifetime)],
-            ['Power in Average', '{:~.2fP}'.format(self.average_power_in)],
-            ['Annual Energy In', '{:~.2fP}'.format(self.annual_energy_in)],
-            ['Capital Cost Per Unit', '{:,~.2fP}'.format(self.specific_capital_cost)],
-            ['Fixed O&M Costs', '{:,~.2fP}'.format(self.fixed_o_and_m_per_size)],
-            ['Variable O&M Costs', '{:,~.2fP}'.format(self.variable_o_and_m)],
-            ['Capital Cost', '{:,~.2fP}'.format(self.capital_cost)],
-            ['Year One Energy Costs', '{:,~.2fP}'.format(self.year_one_energy_costs)],
-            ['Year One Fixed O&M Costs', '{:,~.2fP}'.format(self.year_one_fixed_o_and_m)],
-            ['Year One Variable O&M Costs', '{:,~.2fP}'.format(self.year_one_variable_o_and_m)],
-            ['Year One Total Operating Costs', '{:,~.2fP}'.format(self.year_one_operating_costs)],
-            ['LCOH', '{:,~.2fP}'.format(self.LCOH)],
-        ]
-
-        df_output = pd.DataFrame(data, columns=['Variable', 'Value'])
-        # directory = 'output'
-        # os.makedirs(directory)
-        df_output.to_csv('output/' + filename + '.csv')
-        if self.print_results:
-            print('Writing all output to a file')
+            print('Hot Mass Flow: {:~.3P}'.format(self.hot_mass_flowrate))
+            print('Cold Mass Flow: {:~.3P}'.format(self.cold_mass_flowrate))
+            print('Cold Outlet Temperature: {:~.2fP}'.format(self.cold_final_temperature))
+            print('Thermal Demand: {:~.3fP}'.format(self.process_heat_requirement))
+            print('Power Draw of Heat Pump: {:~.3fP}'.format(self.power_in))
 
     def run_simulation(self):
         self.calculate_COP()

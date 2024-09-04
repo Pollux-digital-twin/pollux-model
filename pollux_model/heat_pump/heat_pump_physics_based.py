@@ -48,16 +48,25 @@ class HeatpumpNREL(Model):
 
     def calculate_output(self, u):
         self.model.hot_temperature_desired = Q_(
-            np.array([u['hot_temperature_desired']] * self.parameters['n_hrs']), 'degC')
+            np.array([u['hot_temperature_desired']]), 'degC')
         self.model.hot_temperature_minimum = Q_(
-            np.array([u['hot_temperature_minimum']] * self.parameters['n_hrs']), 'degC')
+            np.array([u['hot_temperature_return']]), 'degC')
         self.model.cold_temperature_available = Q_(
-            np.array([u['cold_temperature_available']] * self.parameters['n_hrs']), 'degC')
+            np.array([u['cold_temperature_available']]), 'degC')
+        self.model.cold_deltaT = Q_(
+            np.array([u['cold_deltaT']]), 'delta_degC')
+        self.model.process_heat_requirement = Q_(
+            np.array([u['process_heat_requirement']]), 'W')
+        self.model.hot_mass_flowrate = Q_(
+            np.array([u['hot_mass_flowrate']]), 'kg/s')
 
         self.model.run_simulation()
 
-        self.output['power_demand'] = self.model.average_power_in.m * 1000
-        self.output['hot_mass_flow_rate'] = self.model.hot_mass_flowrate_average.m
+        self.output['electricity_power_in'] = self.model.power_in.m
+        self.output['hot_mass_flow_rate'] = self.model.hot_mass_flowrate.m
+        self.output['cold_mass_flow_rate'] = self.model.cold_mass_flowrate.m
+        self.output['actual_COP'] = self.model.actual_COP.m
+        self.output['cold_temperature_return'] = self.model.cold_final_temperature.m
 
     def _load_yaml_parameters(self, yaml_file_path):
         """"
@@ -69,19 +78,3 @@ class HeatpumpNREL(Model):
 
         for key in yaml_parameters.keys():
             self.parameters[key] = yaml_parameters[key]
-
-    def read_config(self, file_path):
-        with open(file_path, 'r') as file:
-            config = yaml.safe_load(file)
-        return config
-
-    def update_config(self, config):
-        for key in config.keys():
-            new_value = input(f"Enter new value for {key} "
-                              f"(leave blank to keep current value '{config[key]}'): ")
-            if new_value:
-                config[key] = new_value
-
-    @staticmethod
-    def run_simulations(heat_pump_mod):
-        heat_pump_mod.run_all('hp_test')
