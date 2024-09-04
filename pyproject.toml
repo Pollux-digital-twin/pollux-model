@@ -37,8 +37,7 @@ pyaml = "^24.7.0"
 matplotlib = "^3.9.2"
 pint = "^0.24.3"
 CoolProp = "^6.6.0"
-#todo: add pyaml,plotly,Coolprop,matplotlib,pint
-
+thermo = "^0.3.0"
 
 
 
