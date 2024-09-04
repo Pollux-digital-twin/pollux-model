@@ -1,4 +1,5 @@
 from pint import UnitRegistry
+
 ureg = UnitRegistry()
 Q_ = ureg.Quantity
 ureg.define('million_Btu = 1e6 * british_thermal_units = MMBtu')

@@ -1,21 +1,16 @@
 import unittest
 from pollux_model.Heat_pump.heat_pump_physics_based import Heat_pump_nrel
-from pollux_model.Heat_pump.NREL_components.heat_pump_model import *
-#from NREL_components.utilities.unit_defs import ureg, Q_
-from pollux_model.Heat_pump.NREL_components.utilities.unit_defs import ureg, Q_
+
 
 class TestHeat_pump_nrel(unittest.TestCase):
 
     def test_get_inputs(self):
         # ARRANGE
-        #todo: difference between param and u?
         param = dict()
         # param['temperature(C)'] = 25
         # param['pressure(bar)'] = 1
         # param['power(W)'] = 9.995438e+07
         param['heat_pump_model'] = 'physics'
-
-
         model = Heat_pump_nrel()
         model.update_parameters(param)
 
@@ -32,13 +27,13 @@ class TestHeat_pump_nrel(unittest.TestCase):
 
         # initialise the model
         model.initialize_state()
-        #update
+        # update
         model.update_state(u)
 
         # calculate  output
         model.calculate_output(u, x)
-#
-        #ACT
+        #
+        # ACT
         # get output
         y = model.get_output()
         expected_hot_mass_flow_rate = 991
@@ -47,8 +42,3 @@ class TestHeat_pump_nrel(unittest.TestCase):
         self.assertAlmostEqual(y['Power Demand(kW)'], expected_power_demand, delta=1)
 
         print(y)
-
-
-# Run the unittest from this file
-if __name__ == '__main__':
-    unittest.main()
