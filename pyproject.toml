@@ -18,7 +18,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Mathematics",
     "Topic :: Scientific/Engineering :: Physics",
 ]
-homepage = "https://nwn.nu/projecten/innovaties/datagedreven-optimalisatie-aardwarmte-systemen/"
+homepage = "https://tno.nl"
 documentation = "https://readthedocs.org"
 repository = "https://github.com/Pollux-digital-twin/pollux-model"
 
