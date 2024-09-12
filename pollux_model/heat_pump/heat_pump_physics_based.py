@@ -1,7 +1,7 @@
 import os
 import yaml
-from pollux_model.heat_pump.NREL_components.heat_pump_model import HeatPumpModel
-from pollux_model.heat_pump.NREL_components.utilities.unit_defs import Q_
+from pollux_model.Heat_pump.NREL_components.heat_pump_model import HeatPumpModel
+from pollux_model.Heat_pump.NREL_components.utilities.unit_defs import Q_
 
 from pollux_model.model_abstract import Model
 import numpy as np
