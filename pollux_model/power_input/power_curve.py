@@ -51,18 +51,25 @@ class DataProcessor(Model):
             # Read the file based on its extension
             if file_extension == '.csv':
                 self.data = pd.read_csv(self.parameters['file_path'])
+                self.data_type = self.data.columns[0]
+                self.power = self.data['solar'][0]
             elif file_extension in ['.xlsx', '.xls']:
                 self.data = pd.read_excel(self.parameters['file_path'])
+                self.data_type = self.data.columns[0]
+                self.power = self.data['solar'][0]
+                self.output['data_type'] = self.data_type
+                self.output['power'] = self.power
             elif file_extension == '.txt':
                 with open(self.parameters['file_path'], 'r') as file:
                     self.data = file.readlines()
+
             else:
                 raise ValueError("Unsupported file type")
         else:
             self.data_type = 'custom_solar'  # an auxiliary vaiable for the
             # simulation,you can use also self.output['data_type']
             self.output['data_type'] = 'custom_solar'
-            self.output['power'] = 100
+            self.output['power'] = 1
 
     def process_data(self):
         results = []

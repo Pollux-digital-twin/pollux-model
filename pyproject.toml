@@ -38,6 +38,7 @@ matplotlib = "^3.9.2"
 pint = "^0.24.3"
 CoolProp = "^6.6.0"
 thermo = "^0.3.0"
+openpyxl = "^3.1.5"
 
 
 

@@ -3,8 +3,8 @@ import yaml
 import math
 from CoolProp.CoolProp import PropsSI
 
-from pollux_model.Heat_pump.NREL_components.utilities.libraries import refrigerants
-from pollux_model.Heat_pump.NREL_components.utilities.unit_defs import ureg, Q_
+from pollux_model.heat_pump.NREL_components.utilities.libraries import refrigerants
+from pollux_model.heat_pump.NREL_components.utilities.unit_defs import ureg, Q_
 
 
 class HeatPumpModel:
