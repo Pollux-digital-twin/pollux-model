@@ -4,8 +4,10 @@ from pollux_model.model_abstract import Model
 class HydrogenTankModel(Model):
     """Compressed gas isothermal model for hydrogen"""
 
-    def __init__(self):
+    def __init__(self, time_function):
         super().__init__()
+        self.time_function = time_function
+        self.current_time = 0
 
         self.parameters['timestep'] = 1  # seconds
         self.parameters['maximum_capacity'] = 6  # maximum mass [kg]
@@ -25,19 +27,24 @@ class HydrogenTankModel(Model):
         self.state['current_mass'] = x['current_mass']
         self._calculate_fill_level()
 
-    def calculate_output(self, u):
+    def calculate_output(self):
         """calculate output based on input u"""
 
-        mass_flow = u['mass_flow']
+        u = self.input
+        mass_flow_in = u['mass_flow_in']
+        mass_flow_out = self.time_function(self.current_time)
+
         timestep = self.parameters['timestep']
 
-        delta_mass = mass_flow * timestep
+        delta_mass = (mass_flow_in - mass_flow_out) * timestep
         self.state['current_mass'] = self.state['current_mass'] + delta_mass
 
         self._calculate_fill_level()
 
         # Assign output to state
-        self.output = self.state
+        self.output['current_mass'] = self.state['current_mass']
+        self.output['fill_level'] = self.state['fill_level']
+        self.output['mass_flow_out'] = mass_flow_out
 
     def _calculate_fill_level(self):
         """function to calculate fill level"""
@@ -70,3 +77,6 @@ class HydrogenTankModel(Model):
         volume = mass / HydrogenTankModel._hydrogen_density(pressure)
 
         return volume
+    
+    def update_time(self, time_step):
+        self.current_time += time_step
