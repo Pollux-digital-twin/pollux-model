@@ -4,8 +4,10 @@ from pollux_model.model_abstract import Model
 class HydrogenTankModel(Model):
     """Compressed gas isothermal model for hydrogen"""
 
-    def __init__(self):
+    def __init__(self, time_function):
         super().__init__()
+        self.time_function = time_function
+        self.current_time = 0
 
         self.parameters['timestep'] = 1  # seconds
         self.parameters['maximum_capacity'] = 6  # maximum mass [kg]
