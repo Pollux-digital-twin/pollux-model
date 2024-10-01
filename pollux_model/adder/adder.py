@@ -1,5 +1,9 @@
 from pollux_model.model_abstract import Model
+<<<<<<< HEAD
 
+=======
+import numpy as np
+>>>>>>> 4645ff3 (add new components (splitter, adder,...))
 
 class Adder(Model):
     def __init__(self):
