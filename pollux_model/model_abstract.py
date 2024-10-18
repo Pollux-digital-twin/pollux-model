@@ -15,6 +15,7 @@ class Model(ABC):
         self.parameters = {}
         self.state = {}
         self.output = {}
+        self.input = {}
 
     def update_parameters(self, parameters):
         """ To update model parameters

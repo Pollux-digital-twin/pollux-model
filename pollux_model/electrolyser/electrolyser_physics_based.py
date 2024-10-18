@@ -43,9 +43,13 @@ class ElectrolyserDeGroot(Model):
         """ generate an initial state based on user parameters """
         pass
 
-    def calculate_output(self, u):
+    # def calculate_output(self, u):
+    #     """calculate output based on input u"""
+    #     self._calc_prod_rates(u)
+    
+    def calculate_output(self):
         """calculate output based on input u"""
-
+        u = self.input
         self._calc_prod_rates(u)
 
     def _calc_prod_rates(self, u):
