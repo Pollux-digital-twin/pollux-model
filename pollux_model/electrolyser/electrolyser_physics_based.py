@@ -2,6 +2,8 @@ from pollux_model.model_abstract import Model
 import numpy as np
 from thermo.chemical import Chemical
 from scipy.optimize import root_scalar
+import math
+from numba import jit
 
 
 class ElectrolyserDeGroot(Model):
@@ -15,6 +17,11 @@ class ElectrolyserDeGroot(Model):
         """ Model initialization
         """
         super().__init__()
+         # PVT properties of H2, O2 and water at current pressure and temperature.
+        self.parameters['T_cell'] =  273.15 + 40 # cell temperature in K
+        self.parameters['p_cathode'] = 10e5 # cathode pressure in Pa
+        self.parameters['p_anode'] = 10e5 # anode pressure in Pa
+        self.parameters['p_0_H2O'] = 10e5 # Pa
 
     def update_parameters(self, parameters):
         """ To update model parameters
@@ -38,6 +45,15 @@ class ElectrolyserDeGroot(Model):
 
         self.parameters['N_cells'] = np.ceil(self.parameters['capacity']
                                              / self.parameters['power_single_cell'])
+        
+        # PVT properties of H2, O2 and water at current pressure and temperature.
+        self.PVT_H2 = Chemical('hydrogen')
+        self.PVT_O2 = Chemical('oxygen')
+        self.PVT_H2O = Chemical('water')
+
+        self.PVT_H2.calculate(T=self.parameters['T_cell'], P=self.parameters['p_cathode'])
+        self.PVT_O2.calculate(T=self.parameters['T_cell'], P=self.parameters['p_anode'])
+        self.PVT_H2O.calculate(T=self.parameters['T_cell'], P=self.parameters['p_0_H2O'])
 
     def initialize_state(self, x):
         """ generate an initial state based on user parameters """
@@ -53,20 +69,20 @@ class ElectrolyserDeGroot(Model):
         self._calc_prod_rates(u)
 
     def _calc_prod_rates(self, u):
-        T_cell = u['T_cell']
-        p_cathode = u['p_cathode']
-        p_anode = u['p_anode']
-        p_0_H2O = u['p_0_H2O']
+        # T_cell = u['T_cell']
+        # p_cathode = u['p_cathode']
+        # p_anode = u['p_anode']
+        # p_0_H2O = u['p_0_H2O']
         power_input = u['power_input']
 
         # PVT properties of H2, O2 and water at current pressure and temperature.
-        PVT_H2 = Chemical('hydrogen')
-        PVT_O2 = Chemical('oxygen')
-        PVT_H2O = Chemical('water')
+        # PVT_H2 = Chemical('hydrogen')
+        # PVT_O2 = Chemical('oxygen')
+        # PVT_H2O = Chemical('water')
 
-        PVT_H2.calculate(T=T_cell, P=p_cathode)
-        PVT_O2.calculate(T=T_cell, P=p_anode)
-        PVT_H2O.calculate(T=T_cell, P=p_0_H2O)
+        # PVT_H2.calculate(T=T_cell, P=p_cathode)
+        # PVT_O2.calculate(T=T_cell, P=p_anode)
+        # PVT_H2O.calculate(T=T_cell, P=p_0_H2O)
 
         self.parameters['power_cell_real'] = power_input / self.parameters[
             'N_cells']  # * self.power_multiplier
@@ -74,11 +90,15 @@ class ElectrolyserDeGroot(Model):
         # can be extended to include active and non active stacks,
         # for now just give the independent stacks
 
-        self._calc_i_cell()
+        # self._calc_i_cell() PJPE: check
         # wteta faraday assume to be constant
         # Production rates [mol/s]
 
-        I_cell_array = self._calc_i_cell()
+        # I_cell_array = self._calc_i_cell() PJPE
+        
+        A_cell = self.parameters['A_cell']
+        power_cell_real = self.parameters['power_cell_real']
+        I_cell_array = self._calc_i_cell_optimized(A_cell, power_cell_real)
 
         self.output['prod_rate_H2'] = (self.parameters['N_cells']) * I_cell_array / (
                 2 * self.parameters['Faraday_const']) * self.parameters['eta_Faraday_array']
@@ -88,14 +108,14 @@ class ElectrolyserDeGroot(Model):
                 2 * self.parameters['Faraday_const'])
 
         # Massflows [kg/s].
-        self.output['massflow_H2'] = self.output['prod_rate_H2'] * PVT_H2.MW * 1e-3
-        self.output['massflow_O2'] = self.output['prod_rate_O2'] * PVT_O2.MW * 1e-3
-        self.output['massflow_H2O'] = self.output['prod_rate_H2O'] * PVT_H2O.MW * 1e-3
+        self.output['massflow_H2'] = self.output['prod_rate_H2'] * self.PVT_H2.MW * 1e-3
+        self.output['massflow_O2'] = self.output['prod_rate_O2'] * self.PVT_O2.MW * 1e-3
+        self.output['massflow_H2O'] = self.output['prod_rate_H2O'] * self.PVT_H2O.MW * 1e-3
 
         # Densities [kg/m^3].
-        self.output['rho_H2'] = PVT_H2.rho
-        self.output['rho_O2'] = PVT_O2.rho
-        self.output['rho_H2O'] = PVT_H2O.rho
+        self.output['rho_H2'] = self.PVT_H2.rho
+        self.output['rho_O2'] = self.PVT_O2.rho
+        self.output['rho_H2O'] = self.PVT_H2O.rho
 
         # Flowrates [m^3/s].
         self.output['flowrate_H2'] = self.output['massflow_H2'] / self.output['rho_H2']
@@ -109,15 +129,51 @@ class ElectrolyserDeGroot(Model):
         self.output['mass_O2'] = self.output['massflow_O2'] * self.parameters['delta_t']
         self.output['mass_H2O'] = self.output['massflow_H2O'] * self.parameters['delta_t']
 
-    def _calc_i_cell(self):
-        I_current_sol = root_scalar(
-            self._root_I_cell, bracket=[1.0, 30000],
-            method='brentq',
-            args=(
-                self.parameters['power_cell_real'],
-            )
-        )
-        return I_current_sol.root
+    # def _calc_i_cell(self):
+    #     I_current_sol = root_scalar(
+    #         self._root_I_cell, bracket=[1.0, 30000],
+    #         method='brentq',
+    #         args=(
+    #             self.parameters['power_cell_real'],
+    #         )
+    #     )
+    #     return I_current_sol.root
+    
+    # simpler approximation 
+    
+    # def _calc_i_cell(self):
+    #     a0 = 1.58119313
+    #     a1 = 0.33090383
+    #     a = -a1 / (1e4 * self.parameters['A_cell'] )
+    #     b = -a0
+    #     c = self.parameters['power_cell_real']
+    #     D = b**2 -4 * a * c
+    #     if D >= 0:
+    #         # root1 = (-b + math.sqrt(D)) / (2 * a)
+    #         root2 = (-b - math.sqrt(D)) / (2 * a) # smallest
+    #         return  root2
+    #     else:
+    #         raise ValueError(f"discriminant is negative ({D})")
+    
+    # @jit(nopython=True) # nopython=True ensures full optimization
+    def _calc_i_cell_optimized(self, A_cell, power_cell_real):
+        # Constants
+        a0 = 1.58119313
+        a1 = 0.33090383
+        
+        # Calculations
+        a = -a1 / (1e4 * A_cell)
+        b = -a0
+        c = power_cell_real
+        
+        # Discriminant
+        D = b ** 2 - 4 * a * c
+        
+        # Check for non-negative discriminant
+        if D >= 0:
+            return (-b - math.sqrt(D)) / (2 * a)  # Smallest root
+        else:
+            raise ValueError(f"discriminant is negative ({D})")
 
     def _root_I_cell(self, I_cell, power_cell):
         self.state['E_total_cell'] = \

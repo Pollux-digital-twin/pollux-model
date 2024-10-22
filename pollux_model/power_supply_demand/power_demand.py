@@ -14,7 +14,10 @@ class PowerDemand(Model):
     
     def calculate_output(self):
         self.output['power_demand'] = self.time_function(self.current_time)
-        self.output['power_difference'] = self.output['power_demand'] - self.input['power_input']
+        # self.output['power_difference'] = self.output['power_demand'] - self.input['power_input']
+    
+    def set_time(self, time):
+        self.current_time = time
         
     def update_time(self, time_step):
         self.current_time += time_step

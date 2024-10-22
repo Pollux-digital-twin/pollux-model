@@ -14,7 +14,10 @@ class HydrogenDemand(Model):
     
     def calculate_output(self):
         self.output['hydrogen_demand'] = self.time_function(self.current_time)
-        self.output['hydrogen_difference'] = self.output['hydrogen_demand'] - self.input['hydrogen_input']
+        # self.output['hydrogen_difference'] = self.output['hydrogen_demand'] - self.input['hydrogen_input']
+    
+    def set_time(self, time):
+        self.current_time = time
         
     def update_time(self, time_step):
         self.current_time += time_step

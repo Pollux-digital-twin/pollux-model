@@ -1,5 +1,5 @@
 from pollux_model.model_abstract import Model
-
+from pollux_model.solver.step_function import StepFunction
 
 class HydrogenTankModel(Model):
     """Compressed gas isothermal model for hydrogen"""
@@ -17,8 +17,10 @@ class HydrogenTankModel(Model):
                 self.parameters['maximum_capacity'],
                 self.parameters['maximum_pressure'])  # maximum volume [m3]
 
+        self.parameters['initial_mass'] = 100.0  # initial mass [kg]
+        
         x = dict()
-        x['current_mass'] = 0
+        x['current_mass'] = self.parameters['initial_mass']
         self.initialize_state(x)
 
     def initialize_state(self, x):
@@ -29,12 +31,13 @@ class HydrogenTankModel(Model):
 
     def calculate_output(self):
         """calculate output based on input u"""
-
+        
+        timestep = self.parameters['timestep']
         u = self.input
         mass_flow_in = u['mass_flow_in']
-        mass_flow_out = self.time_function(self.current_time)
-
-        timestep = self.parameters['timestep']
+        mass_flow_out = self.time_function.evaluate(self.current_time) #PJPE check
+        # print(f"storage: Out: {mass_flow_out}, In: {mass_flow_in} Time: {self.current_time}")
+        
 
         delta_mass = (mass_flow_in - mass_flow_out) * timestep
         self.state['current_mass'] = self.state['current_mass'] + delta_mass
@@ -77,6 +80,19 @@ class HydrogenTankModel(Model):
         volume = mass / HydrogenTankModel._hydrogen_density(pressure)
 
         return volume
-    
+
+    def set_time(self, time):
+        self.current_time = time
+
+    def reset_current_mass(self):
+        x = dict()
+        x['current_mass'] = self.parameters['initial_mass']
+        self.initialize_state(x) 
+
     def update_time(self, time_step):
         self.current_time += time_step
+
+    def update_time_function(self, control):
+        step_size = self.time_function.get_step_size()
+        step_function = StepFunction(control, step_size)
+        self.time_function = step_function
