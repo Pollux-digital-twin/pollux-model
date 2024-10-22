@@ -1,5 +1,5 @@
 from pollux_model.model_abstract import Model
-
+from pollux_model.solver.step_function import StepFunction
 
 class HydrogenTankModel(Model):
     """Compressed gas isothermal model for hydrogen"""

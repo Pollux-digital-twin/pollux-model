@@ -11,6 +11,7 @@ class Splitter(Model):
     pass
 
     def calculate_output(self):
+        # print(f"Splitter Time: {self.current_time}")
         if len(self.input) == 1:
             self.output['output_0'] = self.input['input'] * \
                 self.time_function.evaluate(self.current_time)

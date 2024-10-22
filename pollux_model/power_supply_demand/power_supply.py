@@ -30,6 +30,9 @@ class PowerSupply(Model):
     
     def calculate_output(self):
         self.output['power_supply'] = self.time_function(self.current_time)
-        
+    
+    def set_time(self, time):
+        self.current_time = time
+    
     def update_time(self, time_step):
         self.current_time += time_step
