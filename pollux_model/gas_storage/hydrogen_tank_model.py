@@ -35,9 +35,8 @@ class HydrogenTankModel(Model):
         timestep = self.parameters['timestep']
         u = self.input
         mass_flow_in = u['mass_flow_in']
-        mass_flow_out = self.time_function.evaluate(self.current_time) #PJPE check
+        mass_flow_out = self.time_function.evaluate(self.current_time)  #PJPE check
         # print(f"storage: Out: {mass_flow_out}, In: {mass_flow_in} Time: {self.current_time}")
-        
 
         delta_mass = (mass_flow_in - mass_flow_out) * timestep
         self.state['current_mass'] = self.state['current_mass'] + delta_mass
@@ -84,10 +83,10 @@ class HydrogenTankModel(Model):
     def set_time(self, time):
         self.current_time = time
 
-    def reset_current_mass(self):
+    def set_initial_state(self):
         x = dict()
         x['current_mass'] = self.parameters['initial_mass']
-        self.initialize_state(x) 
+        self.initialize_state(x)
 
     def update_time(self, time_step):
         self.current_time += time_step
