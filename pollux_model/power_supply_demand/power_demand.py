@@ -1,5 +1,5 @@
 from pollux_model.model_abstract import Model
-import numpy as np
+
 
 class PowerDemand(Model):
     def __init__(self, time_function):
@@ -11,13 +11,12 @@ class PowerDemand(Model):
         """ generate an initial state based on user parameters
             """
         pass
-    
+
     def calculate_output(self):
         self.output['power_demand'] = self.time_function(self.current_time)
-        # self.output['power_difference'] = self.output['power_demand'] - self.input['power_input']
-    
+
     def set_time(self, time):
         self.current_time = time
-        
+
     def update_time(self, time_step):
         self.current_time += time_step

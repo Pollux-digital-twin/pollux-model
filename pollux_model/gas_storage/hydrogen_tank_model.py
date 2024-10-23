@@ -1,6 +1,7 @@
 from pollux_model.model_abstract import Model
 from pollux_model.solver.step_function import StepFunction
 
+
 class HydrogenTankModel(Model):
     """Compressed gas isothermal model for hydrogen"""
 
@@ -18,7 +19,7 @@ class HydrogenTankModel(Model):
                 self.parameters['maximum_pressure'])  # maximum volume [m3]
 
         self.parameters['initial_mass'] = 100.0  # initial mass [kg]
-        
+
         x = dict()
         x['current_mass'] = self.parameters['initial_mass']
         self.initialize_state(x)
@@ -31,7 +32,7 @@ class HydrogenTankModel(Model):
 
     def calculate_output(self):
         """calculate output based on input u"""
-        
+
         timestep = self.parameters['timestep']
         u = self.input
         mass_flow_in = u['mass_flow_in']
