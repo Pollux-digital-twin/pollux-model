@@ -1,9 +1,8 @@
 from pollux_model.model_abstract import Model
 import numpy as np
 from thermo.chemical import Chemical
-from scipy.optimize import root_scalar
+# from scipy.optimize import root_scalar
 import math
-from numba import jit
 
 
 # import math
@@ -137,7 +136,7 @@ class ElectrolyserDeGroot(Model):
     #         )
     #     )
     #     return I_current_sol.root
-    
+
     # simpler (and more robust) approximation
     def _calc_i_cell_optimized(self, A_cell, power_cell_real):
         # Constants

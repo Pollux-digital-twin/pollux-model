@@ -4,8 +4,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
-# import matplotlib
-# matplotlib.use('TkAgg')
 import json
 from pollux_model.power_supply_demand.power_supply import PowerSupply
 from pollux_model.power_supply_demand.power_demand import PowerDemand
@@ -179,9 +177,9 @@ else:
 
     # objective function
     objective = Objective(solver, scaling_factor)
-    objective_function = getattr(objective, objective_name)  
+    objective_function = getattr(objective, objective_name)
     # Note: objective function is function of scaled control
-    
+
     method = problem['optimisation']['optimiser']
     # method='trust-constr', 'SLSQP', 'L-BFGS-B', 'Nelder-Mead'
 
@@ -216,8 +214,8 @@ else:
                               bounds=bounds, callback=call_back)
         case "Powell":
             # TNC does only do one iteration, not clear why. dont use it for now!
-            # Powell has a reporting issue result.x does not reproduce reported 
-            # minimal objective function value. below an attempt to repair it in 
+            # Powell has a reporting issue result.x does not reproduce reported
+            # minimal objective function value. below an attempt to repair it in
             # the callback function. Powell seems however very efficient.
             def call_back(x):
                 function_value.append(objective_function(x))
@@ -275,7 +273,7 @@ else:
 power_supply_outputs = solver.outputs[power_supply]
 splitter1_outputs = solver.outputs[splitter1]
 power_demand_outputs = solver.outputs[power_demand]
-hydrogen_demand_outputs = solver.outputs[hydrogen_demand] 
+hydrogen_demand_outputs = solver.outputs[hydrogen_demand]
 electrolyser_outputs = solver.outputs[electrolyser]
 splitter2_outputs = solver.outputs[splitter2]
 hydrogen_storage_outputs = solver.outputs[hydrogen_storage]
@@ -308,7 +306,7 @@ hydrogen_storage_mass_flow_in = [row[1]*3600 for row in splitter2_outputs]  # ou
 # KPI profiles
 # conversion factor kg (H2)/hr to MW=MJ/s
 conversion_factor_hydrogen = 0.0333
-efficiency_electrolyser = [100 * conversion_factor_hydrogen * 
+efficiency_electrolyser = [100 * conversion_factor_hydrogen *
                            hydrogen_electrolyser_mass_flow_out[ii]/electrolyser_power_input[ii]
                            for ii in range(len(electrolyser_power_input))]
 
@@ -346,7 +344,7 @@ if objective_name != "":
     plt.xlabel('Iteration')
     ax.grid(axis='y', alpha=0.75)
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-    
+
     fig, ax = plt.subplots(3, 1, sharex=True, figsize=(10, 6))
     fig.suptitle('Scaled Control', fontsize=16)
     n = len(time_vector_control)-1
@@ -406,7 +404,7 @@ plt.step(time_vector, electrolyser_power_input, color='c', where='post',
          label='Electrolyser power input')
 # just for checking, should be equal to power supply:
 # sum = [x + y for x, y in zip(power_delivered, electrolyser_power_input)]
-# plt.step(time_vector, sum, label='sum', linestyle='--') 
+# plt.step(time_vector, sum, label='sum', linestyle='--')
 plt.step(time_vector, power_demand, color='b', where='post', linewidth=2, label='Power Demand')
 # plt.step(time_vector, power_difference, color='m', label='Demand - Delivered')
 plt.xlabel('Time (hr)')
@@ -476,7 +474,7 @@ ax2 = ax1.twinx()
 ax2.step(time_vector, fill_level, color='k', where='post', label='Fill Level %')
 ax2.step(time_vector, hydrogen_storage_mass_flow_in, color='b', where='post',
          label='Hydrogen Storage mass flow in')
-ax2.step(time_vector, hydrogen_storage_mass_flow_out, color='g', where='post', 
+ax2.step(time_vector, hydrogen_storage_mass_flow_out, color='g', where='post',
          label='Hydrogen Storage mass flow out')
 ax2.set_ylabel('Fill Level [%] / Hydrogen mass flow [kg/hr]', color='b')
 plt.title('Hydrogen Storage profiles')
