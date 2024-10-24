@@ -1,9 +1,8 @@
 from pollux_model.model_abstract import Model
 import numpy as np
 from thermo.chemical import Chemical
-from scipy.optimize import root_scalar
+# from scipy.optimize import root_scalar
 import math
-from numba import jit
 
 
 class ElectrolyserDeGroot(Model):
@@ -18,10 +17,10 @@ class ElectrolyserDeGroot(Model):
         """
         super().__init__()
         # PVT properties of H2, O2 and water at current pressure and temperature.
-        self.parameters['T_cell'] =  273.15 + 40  # cell temperature in K
-        self.parameters['p_cathode'] = 10e5 # cathode pressure in Pa
+        self.parameters['T_cell'] = 273.15 + 40  # cell temperature in K
+        self.parameters['p_cathode'] = 10e5  # cathode pressure in Pa
         self.parameters['p_anode'] = 10e5  # anode pressure in Pa
-        self.parameters['p_0_H2O'] = 10e5 # Pa
+        self.parameters['p_0_H2O'] = 10e5  # Pa
 
     def update_parameters(self, parameters):
         """ To update model parameters
@@ -120,7 +119,7 @@ class ElectrolyserDeGroot(Model):
     #         )
     #     )
     #     return I_current_sol.root
-    
+
     # simpler (and more robust) approximation
     def _calc_i_cell_optimized(self, A_cell, power_cell_real):
         # Constants

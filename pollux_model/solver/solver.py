@@ -51,12 +51,11 @@ class Solver:
                 # Store outputs for each component at each time step
                 for component in [predecessor, successor]:
                     if component not in self.outputs:
-                        self.outputs[component] = np.zeros((len(self.time_vector), 
+                        self.outputs[component] = np.zeros((len(self.time_vector),
                                                             len(component.output.values())))
                     self.outputs[component][time_index] = list(component.output.values())
-                    
+
                     if component not in self.inputs:
                         self.inputs[component] = np.zeros((len(self.time_vector),
                                                            len(component.input.values())))
                     self.inputs[component][time_index] = list(component.input.values())
-                    
