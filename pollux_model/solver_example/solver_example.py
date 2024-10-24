@@ -16,11 +16,13 @@ from pollux_model.electrolyser.electrolyser_physics_based import ElectrolyserDeG
 from pollux_model.gas_storage.hydrogen_tank_model import HydrogenTankModel
 from pollux_model.solver.solver import Solver
 from pollux_model.solver.step_function import StepFunction
-from pollux_model.solver.key_performance_indicators  import *
+from pollux_model.solver.key_performance_indicators import Objective, rmse
 
-with open('C:\\Clones\\pollux\\pollux-model\\pollux_model\\solver_example\\optimization_problem_test4.json', 'r') as file:
+test_folder = "C:\\Clones\\pollux\\pollux-model\\pollux_model\\solver_example\\"
+test_file = "optimization_problem_test4.json"
+with open(test_folder + test_file, 'r') as file:
     problem = json.load(file)
-    
+
 ##########################################################################
 # Setting up time arrays for user input profiles and for the control
 ##########################################################################
