@@ -18,7 +18,7 @@ class HydrogenTankModel(Model):
                 self.parameters['maximum_capacity'],
                 self.parameters['maximum_pressure'])  # maximum volume [m3]
 
-        self.parameters['initial_mass'] = 100.0  # initial mass [kg]
+        self.parameters['initial_mass'] = 0.0  # initial mass [kg]
 
         x = dict()
         x['current_mass'] = self.parameters['initial_mass']

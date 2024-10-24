@@ -26,8 +26,9 @@ class TestElectrolyserPhysicsBased(unittest.TestCase):
         u['p_0_H2O'] = 10e5  # Pa
         u['power_input'] = 2118181.8181  # input power in Watt
 
+        model.input = u
         # ACT
-        model.calculate_output(u)
+        model.calculate_output()
 
         # ASSERT
         y = model.get_output()

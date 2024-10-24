@@ -1,12 +1,18 @@
 import unittest
 from pollux_model.gas_storage.hydrogen_tank_model import HydrogenTankModel
+from pollux_model.solver.step_function import StepFunction
+import numpy as np
 
 
 class TestHydrogenStorage(unittest.TestCase):
 
     def test_calculate_fill_level(self):
         # ARRANGE
-        hydrogentank = HydrogenTankModel()
+        zeros_array = np.zeros(1)
+        step_function = StepFunction(zeros_array, 1)
+        # The HydrogenTankModel has a control vector as input argument
+        # A dummy control is used for this test
+        hydrogentank = HydrogenTankModel(step_function)
 
         param = dict()
         param['timestep'] = 3600  # 1 hour in seconds
@@ -14,8 +20,9 @@ class TestHydrogenStorage(unittest.TestCase):
 
         # ACT
         u = dict()
-        u['mass_flow'] = 1 / 3600  # 1 kg/hr to kg/s
-        hydrogentank.calculate_output(u)
+        u['mass_flow_in'] = 1 / 3600  # 1 kg/hr to kg/s
+        hydrogentank.input = u
+        hydrogentank.calculate_output()
 
         # ASSERT
         y = hydrogentank.get_output()
