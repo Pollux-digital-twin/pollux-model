@@ -10,7 +10,7 @@ class Compressor(Model):
         self.parameters['inlet_temperature'] = 298  # K
         self.parameters['inlet_pressure'] = 1E5  # Pa
         self.parameters['outlet_pressure'] = 20E6  # Pa
-        self.parameters['R'] = 4.124  # J/(kg K), gas constant = 4.124 for hydrogen
+        self.parameters['R'] = 4124.2  # J/(kg K), gas constant = 4124 for hydrogen
         self.parameters['Z'] = 1  # Z = 1 assuming ideal gas
         self.parameters['mechanical_efficiency'] = 0.97
         self.parameters['compressor_efficiency'] = 0.88
