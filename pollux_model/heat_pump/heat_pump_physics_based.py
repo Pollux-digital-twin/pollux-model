@@ -74,7 +74,7 @@ class HeatpumpNREL(Model):
         self.output['electricity_power_in'] = self.model.power_in.m.item()
         self.output['hot_mass_flow_rate'] = self.model.hot_mass_flowrate.m.item()
         self.output['cold_mass_flow_rate'] = self.model.cold_mass_flowrate.m.item()
-        
+
         self.output['actual_COP'] = self.model.actual_COP.m
         self.output['cold_temperature_return'] = self.model.cold_final_temperature.m.item()
         self.output['process_heat_requirement'] = self.model.process_heat_requirement.item()

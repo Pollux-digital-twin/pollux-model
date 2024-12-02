@@ -1,7 +1,6 @@
 from scipy.optimize import minimize
 from scipy.optimize import differential_evolution
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import json
@@ -346,7 +345,8 @@ plt.step(time_vector, power_delivered, color='g', where='post', label='Power del
 # sum = [x + y for x, y in zip(power_delivered, electrolyser_power_input)]
 # plt.step(time_vector, sum, label='sum', linestyle='--')
 plt.step(time_vector, power_demand, color='b', where='post', linewidth=2, label='Power Demand')
-plt.step(time_vector, heatpump_power_input, color='m', where='post', linewidth=2, label='Power Heatpump')
+plt.step(time_vector, heatpump_power_input, color='m', where='post', linewidth=2,
+         label='Power Heatpump')
 # plt.step(time_vector, power_difference, color='m', label='Demand - Delivered')
 plt.xlabel('Time (hr)')
 plt.ylabel('Power [MW]')

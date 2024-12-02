@@ -10,8 +10,9 @@ from pollux_model.power_supply_demand.power_demand import PowerDemand
 from pollux_model.hydrogen_demand.hydrogen_demand import HydrogenDemand
 from pollux_model.splitter.splitter import Splitter
 from pollux_model.adder.adder import Adder
-from pollux_model.electrolyser.electrolyser_physics_based import ElectrolyserDeGroot
-from pollux_model.electrolyser.electrolyser_physics_based_with_compressor import ElectrolyserWithCompressor
+# from pollux_model.electrolyser.electrolyser_physics_based import ElectrolyserDeGroot
+from pollux_model.electrolyser.electrolyser_physics_based_with_compressor \
+    import ElectrolyserWithCompressor
 from pollux_model.gas_storage.hydrogen_tank_model import HydrogenTankModel
 from pollux_model.compressor.compressor import Compressor
 from pollux_model.solver.solver import Solver
@@ -179,14 +180,14 @@ solver = Solver(time_vector, components, components_with_control)
 solver.connect(power_supply,     splitter1,        'power_supply',  'input')
 solver.connect(splitter1,        power_demand,     'output_0',      'power_input')
 
-### A: no compressor
+#  ## A: no compressor
 # solver.connect(splitter1,        electrolyser,     'output_1',      'power_input')
 # solver.connect(electrolyser,     splitter2,        'massflow_H2',   'input')
-### B: compressor independent component
+#  ## B: compressor independent component
 # solver.connect(splitter1,        electrolyser,      'output_1',      'power_input')
 # solver.connect(electrolyser,     compressor,        'massflow_H2',   'mass_flow')
 # solver.connect(compressor,       splitter2,         'mass_flow',     'input')
-### C: compressor integrated with electrolyser
+#  ## C: compressor integrated with electrolyser
 solver.connect(splitter1,        electrolyser,     'output_1',      'power_input')
 solver.connect(electrolyser,     splitter2,        'massflow_H2',   'input')
 

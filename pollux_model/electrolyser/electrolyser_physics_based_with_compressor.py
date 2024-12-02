@@ -1,5 +1,4 @@
 from scipy.optimize import root_scalar
-from pollux_model.model_abstract import Model
 from pollux_model.electrolyser.electrolyser_physics_based import ElectrolyserDeGroot
 from pollux_model.compressor.compressor import Compressor
 import math
@@ -36,7 +35,8 @@ class ElectrolyserWithCompressor(ElectrolyserDeGroot):
     def calculate_output(self):
         """calculate output based on input u"""
         u = self.input
-        solution = root_scalar(self._objective_function, bracket=[0.01 * u['power_input'], 0.9 * u['power_input']],
+        solution = root_scalar(self._objective_function,
+                               bracket=[0.01 * u['power_input'], 0.9 * u['power_input']],
                                method='brentq')
 
         v = dict(u)  # make a copy
@@ -48,7 +48,8 @@ class ElectrolyserWithCompressor(ElectrolyserDeGroot):
         compressor_power = Compressor._power_calculation(self, mass_flow)
         rel_tolerance = 0.001
         if not math.isclose(compressor_power, solution.root, rel_tol=rel_tolerance):
-            raise ValueError(f"{compressor_power} and {solution.root} are not equal within a tolerance of {rel_tolerance}.")
+            raise ValueError(f"{compressor_power} and {solution.root} are not equal within a \
+                             tolerance of {rel_tolerance}.")
 
         self.output['power_electrolyser'] = v['power_input']
         self.output['power_compressor'] = solution.root
