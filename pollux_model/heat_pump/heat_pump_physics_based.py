@@ -37,6 +37,8 @@ class HeatpumpNREL(Model):
         for key, value in parameters.items():
             self.parameters[key] = value
 
+        self.model.print_results = self.parameters['print_results']
+        self.model.refrigerant_flag = self.parameters['refrigerant_flag']
         self.model.refrigerant = self.parameters['refrigerant']
         self.model.carnot_efficiency_factor = Q_('0.55')
         self.model.carnot_efficiency_factor_flag = False
@@ -46,7 +48,12 @@ class HeatpumpNREL(Model):
          """
         pass
 
-    def calculate_output(self, u):
+    def calculate_output(self):
+        """calculate output based on input u"""
+        u = self.input
+        self._calculate_output(u)
+
+    def _calculate_output(self, u):
         self.model.hot_temperature_desired = Q_(
             np.array([u['hot_temperature_desired']]), 'degC')
         self.model.hot_temperature_minimum = Q_(
@@ -59,14 +66,18 @@ class HeatpumpNREL(Model):
             np.array([u['process_heat_requirement']]), 'W')
         self.model.hot_mass_flowrate = Q_(
             np.array([u['hot_mass_flowrate']]), 'kg/s')
+        self.model.power_demand = Q_(
+            np.array([u['power_demand']]), 'W')
 
         self.model.run_simulation()
 
-        self.output['electricity_power_in'] = self.model.power_in.m
-        self.output['hot_mass_flow_rate'] = self.model.hot_mass_flowrate.m
-        self.output['cold_mass_flow_rate'] = self.model.cold_mass_flowrate.m
+        self.output['electricity_power_in'] = self.model.power_in.m.item()
+        self.output['hot_mass_flow_rate'] = self.model.hot_mass_flowrate.m.item()
+        self.output['cold_mass_flow_rate'] = self.model.cold_mass_flowrate.m.item()
+        
         self.output['actual_COP'] = self.model.actual_COP.m
-        self.output['cold_temperature_return'] = self.model.cold_final_temperature.m
+        self.output['cold_temperature_return'] = self.model.cold_final_temperature.m.item()
+        self.output['process_heat_requirement'] = self.model.process_heat_requirement.item()
 
     def _load_yaml_parameters(self, yaml_file_path):
         """"

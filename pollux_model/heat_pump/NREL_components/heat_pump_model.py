@@ -138,6 +138,23 @@ class HeatPumpModel:
                     #               np.round(H_2, 2), 'P',
                     #               np.round(P_2, 2), self.refrigerant)
                     self.actual_COP = (np.divide((H_2 - H_3), (H_2 - H_1))) * ureg.dimensionless
+
+
+                    #TODO:CODE FOR POWER INPUT,NEED TO CHECK
+
+                    self.m_refrigerant = self.power_demand.m / ((H_2 - H_1))
+                    print('Refrigerant mass flow rate(kg/s):',self.m_refrigerant)
+                    self.pr_heat_rej = self.m_refrigerant*((H_2 - H_3))
+                    print('calc_heat rejection:',  self.pr_heat_rej)
+
+
+                    print('H_2:', H_2)
+
+                    print('Power_input:',self.power_demand.m)
+                    H_2input = self.power_demand.m / 2 + H_1
+                    print('H_2_input:', H_2input)
+                    self.actual_COP_input = (np.divide((H_2input - H_3), (H_2 - H_1))) * ureg.dimensionless
+                    print('COP_INPUT:',self.actual_COP_input)
                 else:
                     # T_2 = PropsSI('T', 'S', S_1, 'P', P_3, self.refrigerant)
                     H_2 = PropsSI('H', 'S', S_1, 'P', P_3, self.refrigerant)
@@ -194,13 +211,20 @@ class HeatPumpModel:
                           'P', self.hot_pressure.to('Pa').m,
                           self.hot_refrigerant), 'J/kg')
         try:
-            if math.isnan((float(self.hot_mass_flowrate.to('kg/s').m))):
-                self.hot_mass_flowrate = (
-                    (self.process_heat_requirement.to('W') / (h_ho - h_hi)).to('kg/s'))
-            else:
+            # if math.isnan((float(self.hot_mass_flowrate.to('kg/s').m))):
+            #     self.hot_mass_flowrate = (
+            #         (self.process_heat_requirement.to('W') / (h_ho - h_hi)).to('kg/s'))
 
-                self.process_heat_requirement = (self.hot_mass_flowrate.to('kg/s') *
-                                                 (h_ho - h_hi)).to('W')
+            if math.isnan((float(self.hot_mass_flowrate.to('kg/s').m))) and self.m_refrigerant==None:
+                self.hot_mass_flowrate = (self.process_heat_requirement.to('W')/(h_ho - h_hi)).to('kg/s')
+            elif self.m_refrigerant is None:
+                self.process_heat_requirement = (self.hot_mass_flowrate.to('kg/s')*(h_ho - h_hi)).to('kW')
+            else:
+                self.process_heat_requirement = self.pr_heat_rej
+            # else:
+
+            #     self.process_heat_requirement = (self.hot_mass_flowrate.to('kg/s') *
+            #                                      (h_ho - h_hi)).to('W')
         except Exception:
             print('Provide either .hot_mass_flowrate or .process_heat_requirement.')
             quit()
@@ -217,7 +241,11 @@ class HeatPumpModel:
                           self.cold_final_temperature.to('degK').m, 'P',
                           self.cold_pressure.to('Pa').m,
                           self.cold_refrigerant), 'J/kg')
-        self.cold_mass_flowrate = (self.process_heat_requirement / (h_ci - h_co)).to('kg/s')
+        if self.m_refrigerant != None:
+            self.cold_mass_flowrate = self.process_heat_requirement/(h_ci - h_co)
+            self.hot_mass_flowrate = self.process_heat_requirement/(h_ho - h_hi)  # PJPE
+        else:
+            self.cold_mass_flowrate = self.process_heat_requirement.to('W')/(h_ci - h_co)
         # Calculating the Work into the heat pump
         self.power_in = self.process_heat_requirement / self.actual_COP
 
@@ -225,7 +253,9 @@ class HeatPumpModel:
             print('Hot Mass Flow: {:~.3P}'.format(self.hot_mass_flowrate))
             print('Cold Mass Flow: {:~.3P}'.format(self.cold_mass_flowrate))
             print('Cold Outlet Temperature: {:~.2fP}'.format(self.cold_final_temperature))
-            print('Thermal Demand: {:~.3fP}'.format(self.process_heat_requirement))
+            print('Cold Outlet Temperature: ', self.cold_final_temperature)
+            # print('Thermal Demand: {:~.3fP}'.format(self.process_heat_requirement))
+            print('Thermal Demand: ', self.process_heat_requirement)
             print('Power Draw of Heat Pump: {:~.3fP}'.format(self.power_in))
 
     def run_simulation(self):

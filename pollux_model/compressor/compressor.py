@@ -20,14 +20,15 @@ class Compressor(Model):
         """ generate an initial state based on user parameters """
         pass
 
-    def calculate_output(self, u):
+    def calculate_output(self):
         """calculate output based on input u"""
-
+        u = self.input
         mass_flow = u['mass_flow']  # kg/s
 
         compressor_power = self._power_calculation(mass_flow)
 
         self.output['compressor_power'] = compressor_power
+        self.output['mass_flow'] = mass_flow  # mass_flow is not altered
 
     def _power_calculation(self, mass_flow):
         """See https://myengineeringtools.com/Compressors/Tools_Compressor_Power.html"""
