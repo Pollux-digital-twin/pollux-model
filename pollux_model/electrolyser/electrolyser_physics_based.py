@@ -2,7 +2,7 @@ from pollux_model.model_abstract import Model
 import numpy as np
 from thermo.chemical import Chemical
 from scipy.optimize import root_scalar
-import math
+# import math
 
 
 class ElectrolyserDeGroot(Model):
