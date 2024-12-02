@@ -71,16 +71,15 @@ class ElectrolyserDeGroot(Model):
         # can be extended to include active and non active stacks,
         # for now just give the independent stacks
 
-        # self._calc_i_cell() PJPE: check
         # wteta faraday assume to be constant
         # Production rates [mol/s]
 
-        # I_cell_array = self._calc_i_cell()
+        I_cell_array = self._calc_i_cell()
 
         # This could be faster and more robust
-        A_cell = self.parameters['A_cell']
-        power_cell_real = self.parameters['power_cell_real']
-        I_cell_array = self._calc_i_cell_optimized(A_cell, power_cell_real)
+        # A_cell = self.parameters['A_cell']
+        # power_cell_real = self.parameters['power_cell_real']
+        # I_cell_array = self._calc_i_cell_optimized(A_cell, power_cell_real)
 
         self.output['prod_rate_H2'] = (self.parameters['N_cells']) * I_cell_array / (
                 2 * self.parameters['Faraday_const']) * self.parameters['eta_Faraday_array']
@@ -122,24 +121,24 @@ class ElectrolyserDeGroot(Model):
         return I_current_sol.root
 
     # simpler (and more robust) approximation
-    def _calc_i_cell_optimized(self, A_cell, power_cell_real):
-        # Constants
-        a0 = 1.58119313
-        a1 = 0.33090383
+    # def _calc_i_cell_optimized(self, A_cell, power_cell_real):
+    #     # Constants
+    #     a0 = 1.58119313
+    #     a1 = 0.33090383
 
-        # Calculations
-        a = -a1 / (1e4 * A_cell)
-        b = -a0
-        c = power_cell_real
+    #     # Calculations
+    #     a = -a1 / (1e4 * A_cell)
+    #     b = -a0
+    #     c = power_cell_real
 
-        # Discriminant
-        D = b ** 2 - 4 * a * c
+    #     # Discriminant
+    #     D = b ** 2 - 4 * a * c
 
-        # Check for non-negative discriminant
-        if D >= 0:
-            return (-b - math.sqrt(D)) / (2 * a)  # Smallest root
-        else:
-            raise ValueError(f"discriminant is negative ({D})")
+    #     # Check for non-negative discriminant
+    #     if D >= 0:
+    #         return (-b - math.sqrt(D)) / (2 * a)  # Smallest root
+    #     else:
+    #         raise ValueError(f"discriminant is negative ({D})")
 
     def _root_I_cell(self, I_cell, power_cell):
         self.state['E_total_cell'] = \
