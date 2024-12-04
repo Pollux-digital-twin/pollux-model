@@ -1,14 +1,11 @@
 from pollux_model.model_abstract import Model
-from pollux_model.solver.step_function import StepFunction
 
 
 class HydrogenTankModel(Model):
     """Compressed gas isothermal model for hydrogen"""
 
-    def __init__(self, time_function):
+    def __init__(self):
         super().__init__()
-        self.time_function = time_function
-        self.current_time = 0
 
         self.parameters['timestep'] = 1  # seconds
         self.parameters['maximum_capacity'] = 6  # maximum mass [kg]
@@ -31,11 +28,11 @@ class HydrogenTankModel(Model):
         self._calculate_fill_level()
 
     def calculate_output(self):
-        """calculate output based on input u"""
+        """calculate output based on input"""
 
         timestep = self.parameters['timestep']
-        u = self.input
-        mass_flow_in = u['mass_flow_in']
+
+        mass_flow_in = self.input['mass_flow_in']
         mass_flow_out = self.time_function.evaluate(self.current_time)
 
         delta_mass = (mass_flow_in - mass_flow_out) * timestep
@@ -87,11 +84,3 @@ class HydrogenTankModel(Model):
         x = dict()
         x['current_mass'] = self.parameters['initial_mass']
         self.initialize_state(x)
-
-    def update_time(self, time_step):
-        self.current_time += time_step
-
-    def update_time_function(self, control):
-        step_size = self.time_function.get_step_size()
-        step_function = StepFunction(control, step_size)
-        self.time_function = step_function

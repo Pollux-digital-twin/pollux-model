@@ -16,10 +16,12 @@ class TestHeatStorage(unittest.TestCase):
         x['current_volume'] = 0.5
         buffertank.initialize_state(x)
 
-        # ACT
         u = dict()
         u['volume_flow'] = 0.02 / 3600  # 1 m3/hr to m3/s
-        buffertank.calculate_output(u)
+        buffertank.input = u
+
+        # ACT
+        buffertank.calculate_output()
 
         # ASSERT
         y = buffertank.get_output()
@@ -41,7 +43,8 @@ class TestHeatStorage(unittest.TestCase):
         # ACT
         u = dict()
         u['volume_flow'] = -0.02 / 3600  # 1 m3/hr to m3/s
-        buffertank.calculate_output(u)
+        buffertank.input = u
+        buffertank.calculate_output()
 
         # ASSERT
         y = buffertank.get_output()

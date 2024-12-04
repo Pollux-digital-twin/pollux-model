@@ -16,8 +16,10 @@ class TestModel(unittest.TestCase):
         u = dict()
         u['input_key_1'] = 0.999
 
+        model_instance.input = u
+
         # calculate  output
-        model_instance.calculate_output(u)
+        model_instance.calculate_output()
 
         # get output
         y = model_instance.get_output()

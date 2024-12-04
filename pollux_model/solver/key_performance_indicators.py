@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class Objective():
+class Objective:
     def __init__(self, solver, scaling_factor):
         self.inputs = {}  # dictionary to store inputs of each component over time
         self.solver = solver
@@ -17,7 +17,7 @@ class Objective():
         power_demand = [row[0] for row in power_demand_outputs]
         splitter1_outputs = self.solver.outputs[self.solver.components["splitter1"]]
         power_delivered = [row[0] for row in splitter1_outputs]
-        kpi_rmse_power_demand = rmse(power_demand, power_delivered)/1E6  # MW
+        kpi_rmse_power_demand = rmse(power_demand, power_delivered) / 1E6  # MW
 
         print(kpi_rmse_power_demand)
 
@@ -28,9 +28,9 @@ class Objective():
                    for ii in range(len(control_scaled))]
         self.solver.run(control)
         hydrogen_demand_outputs = self.solver.outputs[self.solver.components["hydrogen_demand"]]
-        hydrogen_demand = [row[0]*3600 for row in hydrogen_demand_outputs]
+        hydrogen_demand = [row[0] * 3600 for row in hydrogen_demand_outputs]
         adder_outputs = self.solver.outputs[self.solver.components["adder"]]
-        hydrogen_delivered = [row[0]*3600 for row in adder_outputs]
+        hydrogen_delivered = [row[0] * 3600 for row in adder_outputs]
         kpi_rmse_hydrogen_demand = rmse(hydrogen_demand, hydrogen_delivered)  # kg/hr
         kpi_rmse_hydrogen_demand = 0.03333 * kpi_rmse_hydrogen_demand  # MW
         print(kpi_rmse_hydrogen_demand)
@@ -49,9 +49,9 @@ class Objective():
         kpi_rmse_power_demand = rmse(power_demand, power_delivered)  # MW
 
         hydrogen_demand_outputs = self.solver.outputs[self.solver.components["hydrogen_demand"]]
-        hydrogen_demand = [row[0]*3600 for row in hydrogen_demand_outputs]
+        hydrogen_demand = [row[0] * 3600 for row in hydrogen_demand_outputs]
         adder_outputs = self.solver.outputs[self.solver.components["adder"]]
-        hydrogen_delivered = [row[0]*3600 for row in adder_outputs]
+        hydrogen_delivered = [row[0] * 3600 for row in adder_outputs]
         kpi_rmse_hydrogen_demand = rmse(hydrogen_demand, hydrogen_delivered)  # kg/hr
 
         # Convert kpi_rmse_hydrogen_demand from kg/hr to MW=MJ/s
@@ -77,9 +77,9 @@ class Objective():
         kpi_rmse_power_demand = rmse(power_demand, power_delivered)  # MW
 
         hydrogen_demand_outputs = self.solver.outputs[self.solver.components["hydrogen_demand"]]
-        hydrogen_demand = [row[0]*3600 for row in hydrogen_demand_outputs]
+        hydrogen_demand = [row[0] * 3600 for row in hydrogen_demand_outputs]
         adder_outputs = self.solver.outputs[self.solver.components["adder"]]
-        hydrogen_delivered = [row[0]*3600 for row in adder_outputs]
+        hydrogen_delivered = [row[0] * 3600 for row in adder_outputs]
         kpi_rmse_hydrogen_demand = rmse(hydrogen_demand, hydrogen_delivered)  # kg/hr
 
         hydrogen_storage_outputs = self.solver.outputs[self.solver.components["hydrogen_storage"]]
@@ -87,7 +87,7 @@ class Objective():
         # hydrogen_storage_mass_flow_out_max = 0.01 *\
         # np.max(np.array(hydrogen_storage_mass_flow_out))
 
-        fill_level = [row[1]*100 for row in hydrogen_storage_outputs]
+        fill_level = [row[1] * 100 for row in hydrogen_storage_outputs]
         fill_level_max = 0.1 * np.max(np.array(fill_level))
 
         # Convert kpi_rmse_hydrogen_demand from kg/hr to MW=MJ/s

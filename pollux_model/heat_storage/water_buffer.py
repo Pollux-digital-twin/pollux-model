@@ -22,10 +22,10 @@ class WaterBufferTankModel(Model):
         self.state['current_volume'] = x['current_volume']
         self._calculate_fill_level()
 
-    def calculate_output(self, u):
-        """calculate output based on input u"""
+    def calculate_output(self):
+        """calculate output based on input"""
 
-        volume_flow = u['volume_flow']
+        volume_flow = self.input['volume_flow']
         timestep = self.parameters['timestep']
 
         delta_volume = volume_flow * timestep

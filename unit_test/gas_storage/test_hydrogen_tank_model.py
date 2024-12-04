@@ -12,7 +12,8 @@ class TestHydrogenStorage(unittest.TestCase):
         step_function = StepFunction(zeros_array, 1)
         # The HydrogenTankModel has a control vector as input argument
         # A dummy control is used for this test
-        hydrogentank = HydrogenTankModel(step_function)
+        hydrogentank = HydrogenTankModel()
+        hydrogentank.set_time_function(step_function)
 
         param = dict()
         param['timestep'] = 3600  # 1 hour in seconds

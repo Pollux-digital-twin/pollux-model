@@ -2,6 +2,8 @@ from pollux_model.model_abstract import Model
 import numpy as np
 from thermo.chemical import Chemical
 from scipy.optimize import root_scalar
+
+
 # import math
 
 
@@ -59,12 +61,12 @@ class ElectrolyserDeGroot(Model):
         pass
 
     def calculate_output(self):
-        """calculate output based on input u"""
-        u = self.input
-        self._calc_prod_rates(u)
+        """calculate output based on input"""
 
-    def _calc_prod_rates(self, u):
-        power_input = u['power_input']
+        self._calc_prod_rates()
+
+    def _calc_prod_rates(self):
+        power_input = self.input['power_input']
         self.parameters['power_cell_real'] = power_input / self.parameters[
             'N_cells']  # * self.power_multiplier
         # todo: the power multiplier

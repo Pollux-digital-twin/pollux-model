@@ -5,9 +5,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import json
-from pollux_model.power_supply_demand.power_supply import PowerSupply
-from pollux_model.power_supply_demand.power_demand import PowerDemand
-from pollux_model.hydrogen_demand.hydrogen_demand import HydrogenDemand
+from pollux_model.power_supply.power_supply_profiles import PowerSupply
+from pollux_model.power_demand.power_demand_profiles import PowerDemand
+from pollux_model.hydrogen_demand.hydrogen_demand_profiles import HydrogenDemand
 from pollux_model.splitter.splitter import Splitter
 from pollux_model.adder.adder import Adder
 from pollux_model.electrolyser.electrolyser_physics_based import ElectrolyserDeGroot
@@ -15,10 +15,11 @@ from pollux_model.gas_storage.hydrogen_tank_model import HydrogenTankModel
 from pollux_model.solver.solver import Solver
 from pollux_model.solver.step_function import StepFunction
 from pollux_model.solver.key_performance_indicators import Objective, rmse
+import os
 
-test_folder = "C:\\Clones\\pollux\\pollux-model\\pollux_model\\solver_example\\"
+test_folder = os.path.dirname(__file__)
 test_file = "optimization_problem_test4.json"
-with open(test_folder + test_file, 'r') as file:
+with open(os.path.join(test_folder, test_file), 'r') as file:
     problem = json.load(file)
 
 ##########################################################################
@@ -31,11 +32,12 @@ if time_horizon % step_size_control != 0:
                       by step_size_control ({step_size_control})")
 
 # time_vector = np.linspace(0, time_horizon, 97) # stepsize=0.25 hrs
-time_vector = np.linspace(0, time_horizon, time_horizon+1)[:-1]  # stepsize=1 hrs
+time_vector = np.linspace(0, time_horizon, time_horizon + 1)[:-1]  # stepsize=1 hrs
 # time_vector_control = np.linspace(0, time_horizon, time_horizon//step_size_control + 1)[:-1]
 # if using stairs instead of step for plotting:
-time_vector_control = np.linspace(0, time_horizon, time_horizon//step_size_control + 1)
+time_vector_control = np.linspace(0, time_horizon, time_horizon // step_size_control + 1)
 zeros_array = np.zeros(len(time_vector_control))
+
 
 ##########################################################################
 # Defining time profiles for supply and demand
@@ -47,22 +49,24 @@ def power_supply_profile(t): return 10E6 * (2 + np.sin(t))  # Watt
 
 
 # power_supply_profile = lambda t: 10E6 * 2 * (t+1)/(t+1) # Watt constant profile for testing
-power_supply = PowerSupply(power_supply_profile)
+power_supply = PowerSupply()
+power_supply.set_time_function(power_supply_profile)
 
 
 # power demand
 def power_demand_profile(t): return 10E6  # Watt
 
 
-power_demand = PowerDemand(power_demand_profile)
+power_demand = PowerDemand()
+power_demand.set_time_function(power_demand_profile)
 
 
 # hydrogen demand
-def hydrogen_demand_profile(t): return 200/3600  # kg/s
+def hydrogen_demand_profile(t): return 200 / 3600  # kg/s
 
 
-hydrogen_demand = HydrogenDemand(hydrogen_demand_profile)
-
+hydrogen_demand = HydrogenDemand()
+hydrogen_demand.set_time_function(hydrogen_demand_profile)
 
 ##########################################################################
 # Setting up the components
@@ -70,11 +74,13 @@ hydrogen_demand = HydrogenDemand(hydrogen_demand_profile)
 
 # splitter1
 step_function = StepFunction(zeros_array, step_size_control)
-splitter1 = Splitter(step_function)
+splitter1 = Splitter()
+splitter1.set_time_function(step_function)
 
 # splitter2
 step_function = StepFunction(zeros_array, step_size_control)
-splitter2 = Splitter(step_function)
+splitter2 = Splitter()
+splitter2.set_time_function(step_function)
 
 # electrolyser
 electrolyser = ElectrolyserDeGroot()
@@ -86,7 +92,7 @@ param['p_anode'] = 10e5  # anode pressure in Pa
 param['p_0_H2O'] = 10e5  # Pa
 param['eta_Faraday_array'] = 1  # just a constant, in reality is a variable
 param['Faraday_const'] = 96485.3329  # Faraday constant [(s A)/mol]
-param['delta_t'] = np.diff(time_vector)[0]*3600  # 3600  # timestep in seconds
+param['delta_t'] = np.diff(time_vector)[0] * 3600  # 3600  # timestep in seconds
 param['A_cell'] = 0.436  # area in m2
 param['cell_type'] = 'low_power_cell'
 param['capacity'] = 100 * 1e6  # capacity in Watt
@@ -94,10 +100,11 @@ electrolyser.update_parameters(param)
 
 # storage
 step_function = StepFunction(zeros_array, step_size_control)
-hydrogen_storage = HydrogenTankModel(step_function)
+hydrogen_storage = HydrogenTankModel()
+hydrogen_storage.set_time_function(step_function)
 
 param = dict()
-param['timestep'] = np.diff(time_vector)[0]*3600  # should be taken equal to delta_t
+param['timestep'] = np.diff(time_vector)[0] * 3600  # should be taken equal to delta_t
 param['maximum_capacity'] = 5000  # kg
 param['initial_mass'] = 1000.0  # kg
 hydrogen_storage.update_parameters(param)
@@ -145,14 +152,14 @@ solver = Solver(time_vector, components, components_with_control)
 # Ordering is important here. For now we assume a fixed configuration.
 # The ordering can be calculated to generalise the implementation but is not done yet.
 # solver.connect(predecessor,     successor,        'predecessor_output', 'successor_input')
-solver.connect(power_supply,     splitter1,        'power_supply',  'input')
-solver.connect(splitter1,        power_demand,     'output_0',      'power_input')
-solver.connect(splitter1,        electrolyser,     'output_1',      'power_input')
-solver.connect(electrolyser,     splitter2,        'massflow_H2',   'input')
-solver.connect(splitter2,        adder,            'output_0',      'input_0')
-solver.connect(splitter2,        hydrogen_storage, 'output_1',      'mass_flow_in')
-solver.connect(hydrogen_storage, adder,            'mass_flow_out', 'input_1')
-solver.connect(adder,            hydrogen_demand,  'output',        'hydrogen_input')
+solver.connect(power_supply, splitter1, 'power_supply', 'input')
+solver.connect(splitter1, power_demand, 'output_0', 'power_input')
+solver.connect(splitter1, electrolyser, 'output_1', 'power_input')
+solver.connect(electrolyser, splitter2, 'massflow_H2', 'input')
+solver.connect(splitter2, adder, 'output_0', 'input_0')
+solver.connect(splitter2, hydrogen_storage, 'output_1', 'mass_flow_in')
+solver.connect(hydrogen_storage, adder, 'mass_flow_out', 'input_1')
+solver.connect(adder, hydrogen_demand, 'output', 'hydrogen_input')
 
 objective_name = problem["objective"]["name"]
 if objective_name == "":
@@ -168,10 +175,10 @@ else:
 
     # bounds
     scaling_factor = np.array(problem['controls']['ub'])
-    bounds = [(problem['controls']['lb'][ii]/scaling_factor[ii],
-               problem['controls']['ub'][ii]/scaling_factor[ii])
+    bounds = [(problem['controls']['lb'][ii] / scaling_factor[ii],
+               problem['controls']['ub'][ii] / scaling_factor[ii])
               for ii in range(len(problem['controls']['init']))]
-    control_init_scaled = [(control_init[ii]/scaling_factor[ii])
+    control_init_scaled = [(control_init[ii] / scaling_factor[ii])
                            for ii in range(len(control_init))]
     objective_label = problem["objective"]["label"]  # Just for plotting
 
@@ -191,11 +198,12 @@ else:
                 function_value.append(objective_function(x))
                 control_scaled_value.append(x)
 
+
             result = minimize(objective_function, control_init_scaled, method=method, tol=1E-6,
                               options={'maxiter': problem["optimisation"]["maxiter"],
                                        'verbose': True, 'disp': True,
                                        'finite_diff_rel_step':
-                                       problem["optimisation"]["finite_diff_step"],
+                                           problem["optimisation"]["finite_diff_step"],
                                        },
                               bounds=bounds, callback=call_back)
 
@@ -203,6 +211,7 @@ else:
             def call_back(x):
                 function_value.append(objective_function(x))
                 control_scaled_value.append(x)
+
 
             result = minimize(objective_function, control_init_scaled, method=method,
                               options={'maxiter': problem["optimisation"]["maxiter"],
@@ -229,6 +238,7 @@ else:
                 else:
                     control_scaled_value.append(x)
 
+
             result = minimize(objective_function, control_init_scaled, method=method,
                               options={'maxiter': problem["optimisation"]["maxiter"],
                                        'verbose': True, 'disp': True,
@@ -244,6 +254,7 @@ else:
             def call_back(x, convergence=None):
                 function_value.append(objective_function(x))
                 control_scaled_value.append(x)
+
 
             result = differential_evolution(objective_function,
                                             maxiter=problem["optimisation"]["maxiter"],
@@ -285,29 +296,29 @@ power_delivered = [row[0] * 1E-6 for row in splitter1_outputs]  # output_0
 electrolyser_power_input = [row[1] * 1E-6 for row in splitter1_outputs]  # output_1
 power_demand = [row[0] * 1E-6 for row in power_demand_outputs]
 # power_difference = [row[1] * 1E-6 for row in power_demand_outputs]
-power_difference = [(power_demand[ii] - power_delivered[ii])/power_demand[ii]
+power_difference = [(power_demand[ii] - power_delivered[ii]) / power_demand[ii]
                     for ii in range(len(power_demand))]
 
 # Hydrogen profiles
-hydrogen_electrolyser_mass_flow_out = [row[3]*3600 for row in electrolyser_outputs]  # massflow_H2
-hydrogen_electrolyser_to_demand = [row[0]*3600 for row in splitter2_outputs]  # output_0
-hydrogen_electrolyser_to_storage = [row[1]*3600 for row in splitter2_outputs]  # output_1
-hydrogen_demand = [row[0]*3600 for row in hydrogen_demand_outputs]
-hydrogen_delivered = [row[0]*3600 for row in adder_outputs]
-hydrogen_difference = [(hydrogen_demand[ii] - hydrogen_delivered[ii])/hydrogen_demand[ii]
+hydrogen_electrolyser_mass_flow_out = [row[3] * 3600 for row in electrolyser_outputs]  # massflow_H2
+hydrogen_electrolyser_to_demand = [row[0] * 3600 for row in splitter2_outputs]  # output_0
+hydrogen_electrolyser_to_storage = [row[1] * 3600 for row in splitter2_outputs]  # output_1
+hydrogen_demand = [row[0] * 3600 for row in hydrogen_demand_outputs]
+hydrogen_delivered = [row[0] * 3600 for row in adder_outputs]
+hydrogen_difference = [(hydrogen_demand[ii] - hydrogen_delivered[ii]) / hydrogen_demand[ii]
                        for ii in range(len(hydrogen_demand))]
 
 # Hydrogen storage profiles
 hydrogen_mass_stored = [row[0] for row in hydrogen_storage_outputs]
-fill_level = [row[1]*100 for row in hydrogen_storage_outputs]
-hydrogen_storage_mass_flow_out = [row[2]*3600 for row in hydrogen_storage_outputs]
-hydrogen_storage_mass_flow_in = [row[1]*3600 for row in splitter2_outputs]  # output_1
+fill_level = [row[1] * 100 for row in hydrogen_storage_outputs]
+hydrogen_storage_mass_flow_out = [row[2] * 3600 for row in hydrogen_storage_outputs]
+hydrogen_storage_mass_flow_in = [row[1] * 3600 for row in splitter2_outputs]  # output_1
 
 # KPI profiles
 # conversion factor kg (H2)/hr to MW=MJ/s
 conversion_factor_hydrogen = 0.0333
 efficiency_electrolyser = [100 * conversion_factor_hydrogen *
-                           hydrogen_electrolyser_mass_flow_out[ii]/electrolyser_power_input[ii]
+                           hydrogen_electrolyser_mass_flow_out[ii] / electrolyser_power_input[ii]
                            for ii in range(len(electrolyser_power_input))]
 
 ##########################################################################
@@ -325,7 +336,7 @@ print(f"KPI, rmse of hydrogen demand and hydrogen delivered {kpi_rmse_hydrogen_d
 print(f"KPI, sum of rmse of demand {kpi_rmse_demand} [MW]")
 
 electrolyser_power_input_sum = sum(electrolyser_power_input)
-hydrogen_electrolyser_mass_flow_out_sum = 0.03333*sum(hydrogen_electrolyser_mass_flow_out)
+hydrogen_electrolyser_mass_flow_out_sum = 0.03333 * sum(hydrogen_electrolyser_mass_flow_out)
 efficiency_electrolyser_total = 100 * hydrogen_electrolyser_mass_flow_out_sum / \
                                 electrolyser_power_input_sum
 print(f"KPI, Efficiency electrolyser {efficiency_electrolyser_total} [-]")
@@ -347,7 +358,7 @@ if objective_name != "":
 
     fig, ax = plt.subplots(3, 1, sharex=True, figsize=(10, 6))
     fig.suptitle('Scaled Control', fontsize=16)
-    n = len(time_vector_control)-1
+    n = len(time_vector_control) - 1
     ax = plt.subplot(311)
     lines = plt.plot(control_scaled_value[:, :n])
     plt.ylabel('Control values')
@@ -357,7 +368,7 @@ if objective_name != "":
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     ax = plt.subplot(312)
-    lines = plt.plot(control_scaled_value[:, n:2*n])
+    lines = plt.plot(control_scaled_value[:, n:2 * n])
     plt.ylabel('Control values')
     # plt.xlabel('Iteration')
     plt.title(components_with_control[1])
@@ -365,7 +376,7 @@ if objective_name != "":
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
     ax = plt.subplot(313)
-    lines = plt.plot(control_scaled_value[:, 2*n:])
+    lines = plt.plot(control_scaled_value[:, 2 * n:])
     plt.ylabel('Control values')
     plt.xlabel('Iteration')
     plt.title(components_with_control[2])
@@ -387,7 +398,7 @@ ax1.legend(loc='upper left')
 ax1.set_xticks(time_vector_control)
 plt.grid(True)
 ax2 = ax1.twinx()
-ax2.stairs(3600*control_reshaped[2], time_vector_control, color='b',
+ax2.stairs(3600 * control_reshaped[2], time_vector_control, color='b',
            label='Hydrogen Storage mass flow out')
 # ax2.step(time_vector_control, 3600*control_reshaped[2], color='b',  where='post',
 #          label='Hydrogen Storage mass flow out')
@@ -420,11 +431,11 @@ fig = plt.figure(figsize=(10, 6))
 #          label='Hydrogen Electrolyser output')
 plt.step(time_vector, hydrogen_electrolyser_to_demand, color='c', where='post',
          label='Hydrogen from Electrolyser to Demand')
-plt.step(time_vector, hydrogen_electrolyser_to_storage, color='m',  where='post',
+plt.step(time_vector, hydrogen_electrolyser_to_storage, color='m', where='post',
          label='Hydrogen from Electrolyser to Storage')
 plt.step(time_vector, hydrogen_storage_mass_flow_out, color='y', where='post',
          label='Hydrogen from Storage to Demand')
-plt.step(time_vector, hydrogen_demand,  color='b', where='post', linewidth=2,
+plt.step(time_vector, hydrogen_demand, color='b', where='post', linewidth=2,
          label='Hydrogen Demand')
 plt.step(time_vector, hydrogen_delivered, color='g', where='post', label='Hydrogen Delivered')
 # plt.step(time_vector, hydrogen_difference, color='m', label='Demand - Delivered')
