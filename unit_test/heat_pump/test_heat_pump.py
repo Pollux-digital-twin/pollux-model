@@ -22,8 +22,10 @@ class TestHeatpumpNREL(unittest.TestCase):
         u['process_heat_requirement'] = 1e6
         u['hot_mass_flowrate'] = 'NaN'
 
+        model.input = u
+
         # ACT
-        model.calculate_output(u)
+        model.calculate_output()
 
         # ASSERT
         y = model.get_output()

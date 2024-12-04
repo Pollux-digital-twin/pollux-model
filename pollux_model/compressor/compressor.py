@@ -20,10 +20,10 @@ class Compressor(Model):
         """ generate an initial state based on user parameters """
         pass
 
-    def calculate_output(self, u):
-        """calculate output based on input u"""
+    def calculate_output(self):
+        """calculate output based on input"""
 
-        mass_flow = u['mass_flow']  # kg/s
+        mass_flow = self.input['mass_flow']  # kg/s
 
         compressor_power = self._power_calculation(mass_flow)
 
@@ -44,11 +44,11 @@ class Compressor(Model):
         P1 = self.parameters['inlet_pressure']
         P2 = self.parameters['outlet_pressure']
         n = self.parameters['number_of_stages']
-        r_stage = (P2/P1)**(1/n)  # pressure ratio per stage
+        r_stage = (P2 / P1) ** (1 / n)  # pressure ratio per stage
 
-        compressor_power = (n * mass_flow * R * T1 / (k - 1)) * ((r_stage)**((k - 1)/k) - 1)
+        compressor_power = (n * mass_flow * R * T1 / (k - 1)) * ((r_stage) ** ((k - 1) / k) - 1)
 
         # correcting for efficiency factors
-        compressor_power = compressor_power/(e_m * e_c)
+        compressor_power = compressor_power / (e_m * e_c)
 
         return compressor_power

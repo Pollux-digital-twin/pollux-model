@@ -17,8 +17,9 @@ class TestCompressor(unittest.TestCase):
 
         u = dict()
         u['mass_flow'] = 0.01  # kg/s
+        compressor.input = u
 
-        compressor.calculate_output(u)
+        compressor.calculate_output()
 
         y = compressor.get_output()
         self.assertAlmostEqual(y['compressor_power'], 81500.09267, delta=0.01)

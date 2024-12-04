@@ -15,8 +15,10 @@ class HydrogenTankModel(Model):
                 self.parameters['maximum_capacity'],
                 self.parameters['maximum_pressure'])  # maximum volume [m3]
 
+        self.parameters['initial_mass'] = 0.0  # initial mass [kg]
+
         x = dict()
-        x['current_mass'] = 0
+        x['current_mass'] = self.parameters['initial_mass']
         self.initialize_state(x)
 
     def initialize_state(self, x):
@@ -25,19 +27,23 @@ class HydrogenTankModel(Model):
         self.state['current_mass'] = x['current_mass']
         self._calculate_fill_level()
 
-    def calculate_output(self, u):
-        """calculate output based on input u"""
+    def calculate_output(self):
+        """calculate output based on input"""
 
-        mass_flow = u['mass_flow']
         timestep = self.parameters['timestep']
 
-        delta_mass = mass_flow * timestep
+        mass_flow_in = self.input['mass_flow_in']
+        mass_flow_out = self.time_function.evaluate(self.current_time)
+
+        delta_mass = (mass_flow_in - mass_flow_out) * timestep
         self.state['current_mass'] = self.state['current_mass'] + delta_mass
 
         self._calculate_fill_level()
 
         # Assign output to state
-        self.output = self.state
+        self.output['current_mass'] = self.state['current_mass']
+        self.output['fill_level'] = self.state['fill_level']
+        self.output['mass_flow_out'] = mass_flow_out
 
     def _calculate_fill_level(self):
         """function to calculate fill level"""
@@ -70,3 +76,11 @@ class HydrogenTankModel(Model):
         volume = mass / HydrogenTankModel._hydrogen_density(pressure)
 
         return volume
+
+    def set_time(self, time):
+        self.current_time = time
+
+    def set_initial_state(self):
+        x = dict()
+        x['current_mass'] = self.parameters['initial_mass']
+        self.initialize_state(x)

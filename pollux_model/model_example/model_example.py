@@ -9,10 +9,10 @@ class Model1(Model):
         """ generate an initial state based on user parameters """
         pass
 
-    def calculate_output(self, u):
+    def calculate_output(self):
         """calculate output based on input u"""
 
-        input_model = u['input_key_1']
+        input_model = self.input['input_key_1']
 
         # OUTPUT calculations
         output_model = self._internal_function(input_model)

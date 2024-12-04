@@ -194,7 +194,7 @@ class HeatPumpModel:
                           'P', self.hot_pressure.to('Pa').m,
                           self.hot_refrigerant), 'J/kg')
         try:
-            if math.isnan((float(self.hot_mass_flowrate.to('kg/s').m))):
+            if math.isnan(float(self.hot_mass_flowrate.to('kg/s').m)):
                 self.hot_mass_flowrate = (
                     (self.process_heat_requirement.to('W') / (h_ho - h_hi)).to('kg/s'))
             else:
