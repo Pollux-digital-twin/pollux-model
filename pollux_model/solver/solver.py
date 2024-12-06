@@ -53,7 +53,6 @@ class Solver:
                     if component not in self.outputs:
                         self.outputs[component] = np.zeros((len(self.time_vector),
                                                             len(component.output.values())))
-
                     self.outputs[component][time_index] = list(component.output.values())
 
                     if component not in self.inputs:
