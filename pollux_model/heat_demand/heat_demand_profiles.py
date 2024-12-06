@@ -12,4 +12,3 @@ class HeatDemand(Model):
 
     def calculate_output(self):
         self.output['heat_demand'] = self.time_function(self.current_time)
-
