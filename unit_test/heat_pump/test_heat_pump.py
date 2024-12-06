@@ -19,11 +19,11 @@ class TestHeatpumpNREL(unittest.TestCase):
         u['cold_temperature_available'] = 80
         u['cold_deltaT'] = 40
 
-        u['process_heat_requirement'] = 1e6
+        u['process_heat_requirement'] = 'NaN'
         u['hot_mass_flowrate'] = 'NaN'
+        u['power_demand'] = 419537.6
 
         model.input = u
-
         # ACT
         model.calculate_output()
 

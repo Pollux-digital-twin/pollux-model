@@ -2,6 +2,7 @@ from pollux_model.model_abstract import Model
 import numpy as np
 from thermo.chemical import Chemical
 from scipy.optimize import root_scalar
+# import math
 
 
 # import math
@@ -73,7 +74,6 @@ class ElectrolyserDeGroot(Model):
         # can be extended to include active and non active stacks,
         # for now just give the independent stacks
 
-        # self._calc_i_cell() PJPE: check
         # wteta faraday assume to be constant
         # Production rates [mol/s]
 
@@ -115,7 +115,8 @@ class ElectrolyserDeGroot(Model):
 
     def _calc_i_cell(self):
         I_current_sol = root_scalar(
-            self._root_I_cell, bracket=[1.0, 30000],
+            # self._root_I_cell, bracket=[1.0, 30000],
+            self._root_I_cell, bracket=[1.0, 1000],
             method='brentq',
             args=(
                 self.parameters['power_cell_real'],
