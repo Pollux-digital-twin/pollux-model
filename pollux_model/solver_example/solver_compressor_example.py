@@ -73,11 +73,13 @@ hydrogen_demand = HydrogenDemand(hydrogen_demand_profile)
 
 # splitter1
 step_function = StepFunction(zeros_array, step_size_control)
-splitter1 = Splitter(step_function)
+splitter1 = Splitter()
+splitter1.set_time_function(step_function)
 
 # splitter2
 step_function = StepFunction(zeros_array, step_size_control)
-splitter2 = Splitter(step_function)
+splitter2 = Splitter()
+splitter2.set_time_function(step_function)
 
 # electrolyser
 # electrolyser = ElectrolyserDeGroot()
@@ -125,7 +127,8 @@ compressor.update_parameters(param)
 
 # storage
 step_function = StepFunction(zeros_array, step_size_control)
-hydrogen_storage = HydrogenTankModel(step_function)
+hydrogen_storage = HydrogenTankModel()
+hydrogen_storage.set_time_function(step_function)
 
 param = dict()
 param['timestep'] = np.diff(time_vector)[0]*3600  # should be taken equal to delta_t

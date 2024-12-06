@@ -1,5 +1,6 @@
 from pollux_model.model_abstract import Model
 
+
 class Adder(Model):
     def __init__(self):
         super().__init__()

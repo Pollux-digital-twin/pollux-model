@@ -85,8 +85,9 @@ class HeatPumpModel:
                         min_p_crit = p_crit
                         self.refrigerant = test_refrigerant
 
-            print('Selected refrigerant (based on user selection or minimual p_crit) is: ',
-                  self.refrigerant)
+            if self.print_results:
+                print('Selected refrigerant (based on user selection or minimual p_crit) is: ',
+                      self.refrigerant)
 
             # Adjust such that this is below the Carnot Efficiency Factor
             # Cycle calculation
@@ -142,16 +143,16 @@ class HeatPumpModel:
                     # TODO:CODE FOR POWER INPUT,NEED TO CHECK
 
                     self.m_refrigerant = self.power_demand.m / ((H_2 - H_1))
-                    print('Refrigerant mass flow rate(kg/s):', self.m_refrigerant)
+                    # print('Refrigerant mass flow rate(kg/s):', self.m_refrigerant)
                     self.pr_heat_rej = self.m_refrigerant*((H_2 - H_3))
-                    print('calc_heat rejection:',  self.pr_heat_rej)
-                    print('H_2:', H_2)
-                    print('Power_input:', self.power_demand.m)
+                    # print('calc_heat rejection:',  self.pr_heat_rej)
+                    # print('H_2:', H_2)
+                    # print('Power_input:', self.power_demand.m)
                     H_2input = self.power_demand.m / 2 + H_1
-                    print('H_2_input:', H_2input)
+                    # print('H_2_input:', H_2input)
                     self.actual_COP_input = \
                         (np.divide((H_2input - H_3), (H_2 - H_1))) * ureg.dimensionless
-                    print('COP_INPUT:', self.actual_COP_input)
+                    # print('COP_INPUT:', self.actual_COP_input)
                 else:
                     # T_2 = PropsSI('T', 'S', S_1, 'P', P_3, self.refrigerant)
                     H_2 = PropsSI('H', 'S', S_1, 'P', P_3, self.refrigerant)
@@ -243,7 +244,7 @@ class HeatPumpModel:
                           self.cold_refrigerant), 'J/kg')
         if self.m_refrigerant is not None:
             self.cold_mass_flowrate = self.process_heat_requirement/(h_ci - h_co)
-            self.hot_mass_flowrate = self.process_heat_requirement/(h_ho - h_hi)  # PJPE
+            self.hot_mass_flowrate = self.process_heat_requirement/(h_ho - h_hi)
         else:
             self.cold_mass_flowrate = self.process_heat_requirement.to('W')/(h_ci - h_co)
         # Calculating the Work into the heat pump

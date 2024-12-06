@@ -67,7 +67,8 @@ heat_demand = HeatDemand(heat_demand_profile)
 
 # splitter1
 step_function = StepFunction(zeros_array, step_size_control)
-splitter1 = Splitter(step_function)
+splitter1 = Splitter()
+splitter1.set_time_function(step_function)
 
 # heat pump
 heatpump = HeatpumpNREL()

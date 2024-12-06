@@ -130,7 +130,7 @@ class ElectrolyserDeGroot(Model):
     def _calc_i_cell(self):
         I_current_sol = root_scalar(
             # self._root_I_cell, bracket=[1.0, 30000],
-            self._root_I_cell, bracket=[1.0, 10000],
+            self._root_I_cell, bracket=[1.0, 1000],
             method='brentq',
             args=(
                 self.parameters['power_cell_real'],

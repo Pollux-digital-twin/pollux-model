@@ -39,9 +39,8 @@ class ElectrolyserWithCompressor(ElectrolyserDeGroot):
                                bracket=[0.01 * u['power_input'], 0.9 * u['power_input']],
                                method='brentq')
 
-        v = dict(u)  # make a copy
-        v['power_input'] = u['power_input'] - solution.root
-        ElectrolyserDeGroot._calc_prod_rates(self, v)
+        self.input['power_input'] = self.input['power_input'] - solution.root
+        ElectrolyserDeGroot._calc_prod_rates(self)
 
         #  checking
         mass_flow = self.output['massflow_H2']  # kg/s
@@ -51,14 +50,15 @@ class ElectrolyserWithCompressor(ElectrolyserDeGroot):
             raise ValueError(f"{compressor_power} and {solution.root} are not equal within a \
                              tolerance of {rel_tolerance}.")
 
-        self.output['power_electrolyser'] = v['power_input']
+        self.output['power_electrolyser'] = self.input['power_input']
         self.output['power_compressor'] = solution.root
 
     def _objective_function(self, x):
         u = self.input
         v = dict(u)  # make a copy
-        v['power_input'] = u['power_input'] - x
-        ElectrolyserDeGroot._calc_prod_rates(self, v)
+        self.input['power_input'] = u['power_input'] - x
+        ElectrolyserDeGroot._calc_prod_rates(self)
+        self.input = v
         mass_flow = self.output['massflow_H2']  # kg/s
         compressor_power = Compressor._power_calculation(self, mass_flow)
         return compressor_power - x
