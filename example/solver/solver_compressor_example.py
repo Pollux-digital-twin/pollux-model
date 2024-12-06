@@ -5,9 +5,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import json
-from pollux_model.power_supply_demand.power_supply import PowerSupply
-from pollux_model.power_supply_demand.power_demand import PowerDemand
-from pollux_model.hydrogen_demand.hydrogen_demand import HydrogenDemand
+from pollux_model.power_supply.power_supply_profiles import PowerSupply
+from pollux_model.power_demand.power_demand_profiles import PowerDemand
+from pollux_model.hydrogen_demand.hydrogen_demand_profiles import HydrogenDemand
 from pollux_model.splitter.splitter import Splitter
 from pollux_model.adder.adder import Adder
 # from pollux_model.electrolyser.electrolyser_physics_based import ElectrolyserDeGroot
@@ -18,10 +18,11 @@ from pollux_model.compressor.compressor import Compressor
 from pollux_model.solver.solver import Solver
 from pollux_model.solver.step_function import StepFunction
 from pollux_model.solver.key_performance_indicators import Objective, rmse
+import os
 
-test_folder = "C:\\Clones\\pollux\\pollux-model\\pollux_model\\solver_example\\"
+test_folder = os.path.dirname(__file__)
 test_file = "optimization_problem_test4.json"
-with open(test_folder + test_file, 'r') as file:
+with open(os.path.join(test_folder, test_file), 'r') as file:
     problem = json.load(file)
 
 ##########################################################################
@@ -50,21 +51,24 @@ def power_supply_profile(t): return 10E6 * (2 + np.sin(t))  # Watt
 
 
 # power_supply_profile = lambda t: 10E6 * 2 * (t+1)/(t+1) # Watt constant profile for testing
-power_supply = PowerSupply(power_supply_profile)
+power_supply = PowerSupply()
+power_supply.set_time_function(power_supply_profile)
 
 
 # power demand
 def power_demand_profile(t): return 10E6  # Watt
 
 
-power_demand = PowerDemand(power_demand_profile)
+power_demand = PowerDemand()
+power_demand.set_time_function(power_demand_profile)
 
 
 # hydrogen demand
 def hydrogen_demand_profile(t): return 200/3600  # kg/s
 
 
-hydrogen_demand = HydrogenDemand(hydrogen_demand_profile)
+hydrogen_demand = HydrogenDemand()
+hydrogen_demand.set_time_function(hydrogen_demand_profile)
 
 
 ##########################################################################

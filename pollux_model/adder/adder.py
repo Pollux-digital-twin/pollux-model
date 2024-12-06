@@ -4,7 +4,6 @@ from pollux_model.model_abstract import Model
 class Adder(Model):
     def __init__(self):
         super().__init__()
-        self.current_time = 0
 
     def initialize_state(self, x):
         pass

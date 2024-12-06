@@ -49,11 +49,10 @@ class HeatpumpNREL(Model):
         pass
 
     def calculate_output(self):
-        """calculate output based on input u"""
-        u = self.input
-        self._calculate_output(u)
+        """calculate output based on input"""
+        self._calculate_output()
 
-    def _calculate_output(self, u):
+    def _calculate_output(self):
         self.model.hot_temperature_desired = Q_(
             np.array([self.input['hot_temperature_desired']]), 'degC')
         self.model.hot_temperature_minimum = Q_(
