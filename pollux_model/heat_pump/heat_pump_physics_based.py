@@ -65,18 +65,19 @@ class HeatpumpNREL(Model):
             np.array([self.input['process_heat_requirement']]), 'W')
         self.model.hot_mass_flowrate = Q_(
             np.array([self.input['hot_mass_flowrate']]), 'kg/s')
-        self.model.power_demand = Q_(
-            np.array([self.input['power_demand']]), 'W')
+        self.model.electricity_power_in = Q_(
+            np.array([self.input['electricity_power_in']]), 'W')
 
         self.model.run_simulation()
 
-        self.output['electricity_power_in'] = self.model.power_in.m.item()
-        self.output['hot_mass_flow_rate'] = self.model.hot_mass_flowrate.m.item()
+        self.output['expected_electricity_power_in'] = self.model.average_power_in.m.item()*1000
+        self.output['hot_mass_flow_rate'] = self.model.hot_mass_flowrate_average.m.item()
         self.output['cold_mass_flow_rate'] = self.model.cold_mass_flowrate.m.item()
 
         self.output['actual_COP'] = self.model.actual_COP.m
         self.output['cold_temperature_return'] = self.model.cold_final_temperature.m.item()
-        self.output['process_heat_requirement'] = self.model.process_heat_requirement.item()
+        self.output['expected_heat_requirement'] = self.model.process_heat_requirement2
+        # self.output['expected_heat_requirement'] = self.model.process_heat_requirement.m.item()
 
     def _load_yaml_parameters(self, yaml_file_path):
         """"
