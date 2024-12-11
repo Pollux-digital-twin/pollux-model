@@ -4,7 +4,6 @@ from pollux_model.model_abstract import Model
 class Compressor(Model):
     def __init__(self):
         super().__init__()
-
         # specific_heat_ratio (Cp/Cv) also called gas isentropic coefficient
         self.parameters['specific_heat_ratio'] = 1.41  # = 1.41 for hydrogen
         self.parameters['inlet_temperature'] = 298  # K
@@ -28,6 +27,7 @@ class Compressor(Model):
         compressor_power = self._power_calculation(mass_flow)
 
         self.output['compressor_power'] = compressor_power
+        self.output['mass_flow'] = mass_flow  # mass_flow is not altered
 
     def _power_calculation(self, mass_flow):
         """See https://myengineeringtools.com/Compressors/Tools_Compressor_Power.html"""

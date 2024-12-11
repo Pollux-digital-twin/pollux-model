@@ -85,8 +85,9 @@ class HeatPumpModel:
                         min_p_crit = p_crit
                         self.refrigerant = test_refrigerant
 
-            print('Selected refrigerant (based on user selection or minimual p_crit) is: ',
-                  self.refrigerant)
+            if self.print_results:
+                print('Selected refrigerant (based on user selection or minimual p_crit) is: ',
+                      self.refrigerant)
 
             # Adjust such that this is below the Carnot Efficiency Factor
             # Cycle calculation
@@ -118,9 +119,18 @@ class HeatPumpModel:
 
                 P_3 = PropsSI('P', 'T', T_3, 'Q', 0, self.refrigerant)
                 # S_3 = PropsSI('S', 'T', T_3, 'Q', 0, self.refrigerant)
+                S_3 = PropsSI('S', 'T', T_3, 'Q', 0, self.refrigerant)
                 H_3 = PropsSI('H', 'T', T_3, 'Q', 0, self.refrigerant)
-                if len(T_1) == 1:
+                P_4 = P_1
+                H_4 = H_3
+                T_4 = PropsSI('T', 'P', np.round(P_4, 2), 'H',
+                              np.round(H_4, 2), self.refrigerant)
+                S_4 = PropsSI('S', 'H', np.round(H_4, 2), 'P',
+                              np.round(P_4, 2), self.refrigerant)
 
+                if len(T_1) == 1:
+                    T_2 = PropsSI('T', 'S', np.round(S_1, 2), 'P',
+                                  np.round(P_3, 2), self.refrigerant)
                     # T_2 = PropsSI('T', 'S',
                     #               np.round(S_1, 2), 'P', np.round(P_3, 2), self.refrigerant)
                     H_2 = PropsSI('H', 'S',
@@ -128,6 +138,9 @@ class HeatPumpModel:
                                   np.round(P_3, 2), self.refrigerant)
 
                     P_2 = P_3
+                    S_2 = PropsSI('S', 'H', np.round(H_2, 2), 'P',
+                                  np.round(P_2, 2), self.refrigerant)
+
                     H_2_prime = PropsSI('H', 'S',
                                         np.round(S_1, 2),
                                         'P', np.round(P_3, 2), self.refrigerant)
@@ -138,6 +151,33 @@ class HeatPumpModel:
                     #               np.round(H_2, 2), 'P',
                     #               np.round(P_2, 2), self.refrigerant)
                     self.actual_COP = (np.divide((H_2 - H_3), (H_2 - H_1))) * ureg.dimensionless
+
+                    # TODO:CODE FOR POWER INPUT,NEED TO CHECK
+                    if self.electricity_power_in.m != 'NaN':
+                        self.m_refrigerant = self.electricity_power_in.m / ((H_2 - H_1))
+                        print('Refrigerant mass flow rate(kg/s):', self.m_refrigerant)
+                        self.pr_heat_rej = Q_(self.m_refrigerant * ((H_2 - H_3)), 'W')
+                        print('calc_heat rejection:', self.pr_heat_rej)
+                        print('Power_input:', self.electricity_power_in.m)
+                        H_2input = self.electricity_power_in.m / 2 + H_1
+                        print('H_2:', H_2)
+                        print('H_2_input:', H_2input)
+                        self.actual_COP_input = (np.divide((H_2input - H_3),
+                                                           (H_2 - H_1))) * ureg.dimensionless
+                        print('COP_INPUT:', self.actual_COP_input)
+                    else:
+                        self.m_refrigerant = 'NaN'
+                    # self.m_refrigerant = self.electricity_power_in.m / ((H_2 - H_1))
+                    # # print('Refrigerant mass flow rate(kg/s):', self.m_refrigerant)
+                    # self.pr_heat_rej = self.m_refrigerant*((H_2 - H_3))
+                    # # print('calc_heat rejection:',  self.pr_heat_rej)
+                    # # print('H_2:', H_2)
+                    # # print('Power_input:', self.power_demand.m)
+                    # H_2input = self.electricity_power_in.m / 2 + H_1
+                    # # print('H_2_input:', H_2input)
+                    # self.actual_COP_input = \
+                    #     (np.divide((H_2input - H_3), (H_2 - H_1))) * ureg.dimensionless
+                    # # print('COP_INPUT:', self.actual_COP_input)
                 else:
                     # T_2 = PropsSI('T', 'S', S_1, 'P', P_3, self.refrigerant)
                     H_2 = PropsSI('H', 'S', S_1, 'P', P_3, self.refrigerant)
@@ -180,27 +220,71 @@ class HeatPumpModel:
         if self.print_results:
             print('Pressure ratio: ', PR)
 
+        self.refrigerant_T = [float(self.refrigerant_low_temperature.m), float(T_2),
+                              float(self.refrigerant_high_temperature.m), float(T_4), float(T_1)]
+        self.refrigerant_H = [float(H_1), float(H_2), float(H_3), float(H_4), float(H_1)]
+        self.refrigerant_S = [float(S_1), float(S_2), float(S_3), float(S_4), float(S_1)]
+
+        self.refrigerant_P = [float(P_1), float(P_2), float(P_3), float(P_4), float(P_1)]
+
     # Calculating working fluid energy and mass balance
     def calculate_energy_and_mass_flow(self):
         if self.print_results:
             print('Calculate Energy and Mass Called')
 
-        # Calculating the Hot and Cold Mass Flow Parameters
-        # Hot
-        h_hi = Q_(PropsSI('H', 'T', self.hot_temperature_minimum.to('degK').m,
-                          'P', self.hot_pressure.to('Pa').m,
-                          self.hot_refrigerant), 'J/kg')
-        h_ho = Q_(PropsSI('H', 'T', self.hot_temperature_desired.to('degK').m,
-                          'P', self.hot_pressure.to('Pa').m,
-                          self.hot_refrigerant), 'J/kg')
-        try:
-            if math.isnan(float(self.hot_mass_flowrate.to('kg/s').m)):
-                self.hot_mass_flowrate = (
-                    (self.process_heat_requirement.to('W') / (h_ho - h_hi)).to('kg/s'))
-            else:
+        # Initializing Temporary Arrays
+        # h_hi = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
+        # h_ho = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
+        # h_ci = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
+        #        h_co = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
+        h_hi_new = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
+        h_ho_new = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
+        h_ci_new = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
+        h_co_new = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
 
-                self.process_heat_requirement = (self.hot_mass_flowrate.to('kg/s') *
-                                                 (h_ho - h_hi)).to('W')
+        # Calculating the Hot and Cold Mass Flow Parameters
+        # h_hi = Q_(PropsSI('H', 'T', self.hot_temperature_minimum.to('degK').m,
+        # 'P', self.hot_pressure.to('Pa').m,self.hot_refrigerant), 'J/kg')
+        P_hi_q = PropsSI('P', 'T', self.hot_temperature_minimum.to('degK').m,
+                         'Q', 0, self.hot_refrigerant)
+        h_hi_new = Q_(PropsSI('H', 'T', self.hot_temperature_minimum.to('degK').m,
+                              'Q', 0, self.hot_refrigerant), 'J/kg')
+        S_hi_new = PropsSI('S', 'H', np.round(h_hi_new.to('J/kg').m, 2),
+                           'P', np.round(P_hi_q, 2), self.hot_refrigerant)
+
+        # h_ho = Q_(PropsSI('H', 'T', self.hot_temperature_desired.to('degK').m,
+        #                   'P', self.hot_pressure.to('Pa').m,
+        #                   self.hot_refrigerant), 'J/kg')
+        P_ho_q = PropsSI('P', 'T', self.hot_temperature_desired.to('degK').m,
+                         'Q', 0, self.hot_refrigerant)
+        h_ho_new = Q_(PropsSI('H', 'T', self.hot_temperature_desired.to('degK').m,
+                              'Q', 0, self.hot_refrigerant),
+                      'J/kg')
+        S_ho_new = PropsSI('S', 'H', np.round(h_ho_new.to('J/kg').m, 2),
+                           'P', np.round(P_hi_q, 2), self.hot_refrigerant)
+
+        try:
+            # if math.isnan((float(self.hot_mass_flowrate.to('kg/s').m))):
+            #     self.hot_mass_flowrate = (
+            #         (self.process_heat_requirement.to('W') / (h_ho - h_hi)).to('kg/s'))
+
+            if math.isnan((float(self.hot_mass_flowrate.to('kg/s').m))) and \
+                    self.m_refrigerant == 'NaN':
+                # self.hot_mass_flowrate = \
+                #     (self.process_heat_requirement.to('W')/(h_ho - h_hi)).to('kg/s')
+                self.hot_mass_flowrate = (
+                    (self.process_heat_requirement.to('W') / (h_ho_new - h_hi_new)).to('kg/s'))
+            elif self.m_refrigerant == 'NaN':
+                # self.process_heat_requirement = \
+                #     (self.hot_mass_flowrate.to('kg/s')*(h_ho - h_hi)).to('kW')
+                self.process_heat_requirement = \
+                    (self.hot_mass_flowrate.to('kg/s') * (h_ho_new - h_hi_new)).to('W')
+            else:
+                self.process_heat_requirement = self.pr_heat_rej
+            # else:
+
+            #     self.process_heat_requirement = (self.hot_mass_flowrate.to('kg/s') *
+            #                                      (h_ho - h_hi)).to('W')
         except Exception:
             print('Provide either .hot_mass_flowrate or .process_heat_requirement.')
             quit()
@@ -208,25 +292,82 @@ class HeatPumpModel:
         # Cold
         cold_dT = self.cold_buffer + self.cold_deltaT
 
-        h_ci = Q_(PropsSI('H', 'T',
-                          self.cold_temperature_available.to('degK').m,
-                          'P', self.cold_pressure.to('Pa').m,
-                          self.cold_refrigerant), 'J/kg')
+        # h_ci = Q_(PropsSI('H', 'T',
+        #                   self.cold_temperature_available.to('degK').m,
+        #                   'P', self.cold_pressure.to('Pa').m,
+        #                   self.cold_refrigerant), 'J/kg')
+        h_ci_new = Q_(PropsSI('H', 'T',
+                              self.cold_temperature_available.to('degK').m,
+                              'Q', 0, self.cold_refrigerant),
+                      'J/kg')
+        P_ci_q = PropsSI('P', 'T',
+                         self.cold_temperature_available.to('degK').m,
+                         'Q', 0, self.hot_refrigerant)
+        S_ci_new = PropsSI('S', 'H',
+                           np.round(h_ci_new.to('J/kg').m, 2),
+                           'P', np.round(P_ci_q, 2), self.hot_refrigerant)
+
         self.cold_final_temperature = self.cold_temperature_available - cold_dT
-        h_co = Q_(PropsSI('H', 'T',
-                          self.cold_final_temperature.to('degK').m, 'P',
-                          self.cold_pressure.to('Pa').m,
-                          self.cold_refrigerant), 'J/kg')
-        self.cold_mass_flowrate = (self.process_heat_requirement / (h_ci - h_co)).to('kg/s')
+        # h_co = Q_(PropsSI('H', 'T',
+        #                   self.cold_final_temperature.to('degK').m, 'P',
+        #                   self.cold_pressure.to('Pa').m,
+        #                   self.cold_refrigerant), 'J/kg')
+        h_co_new = Q_(PropsSI('H', 'T',
+                              self.cold_final_temperature.to('degK').m,
+                              'Q', 0, self.cold_refrigerant),
+                      'J/kg')
+        P_co_q = PropsSI('P', 'T',
+                         self.cold_final_temperature.to('degK').m,
+                         'Q', 0, self.hot_refrigerant)
+        S_co_new = PropsSI('S', 'H',
+                           np.round(h_co_new.to('J/kg').m, 2), 'P',
+                           np.round(P_co_q, 2), self.hot_refrigerant)
+        if self.m_refrigerant != 'NaN':
+            # self.cold_mass_flowrate = self.process_heat_requirement/(h_ci - h_co)
+            self.cold_mass_flowrate = self.process_heat_requirement / (h_ci_new - h_co_new)
+            # self.hot_mass_flowrate = self.process_heat_requirement/(h_ho - h_hi)
+            self.hot_mass_flowrate_average = (self.process_heat_requirement / (h_ho_new - h_hi_new))
+        else:
+            self.cold_mass_flowrate = self.process_heat_requirement.to('W') / (h_ci_new - h_co_new)
+            self.hot_mass_flowrate_average = np.mean(self.hot_mass_flowrate).to('kg /s')
+
+        # # Calculating the Work into the heat pump
+        # self.power_in = self.process_heat_requirement / self.actual_COP
+
         # Calculating the Work into the heat pump
-        self.power_in = self.process_heat_requirement / self.actual_COP
+        if self.m_refrigerant != 'NaN':
+            self.power_in = self.process_heat_requirement / self.actual_COP
+            # self.process_heat_requirement2 = float(self.process_heat_requirement)
+        else:
+
+            self.power_in = self.process_heat_requirement / self.actual_COP
+            # self.process_heat_requirement2 = self.process_heat_requirement.to('W').m.item()
+        # for i in range(0,8760):
+        #    self.power_in[i] = self.process_heat_requirement_kw[i]/self.actual_COP
+        self.average_power_in = np.mean(self.power_in)
+        # self.annual_energy_in = self.mysum(self.power_in*Q_('1 hour')).to('kWh')
+
+        # if (self.power_demand.m - self.average_power_in.m) > 10:
+        #     print('all good')
 
         if self.print_results:
-            print('Hot Mass Flow: {:~.3P}'.format(self.hot_mass_flowrate))
+            print('Hot Mass Flow: {:~.3P}'.format(self.hot_mass_flowrate_average))
             print('Cold Mass Flow: {:~.3P}'.format(self.cold_mass_flowrate))
             print('Cold Outlet Temperature: {:~.2fP}'.format(self.cold_final_temperature))
-            print('Thermal Demand: {:~.3fP}'.format(self.process_heat_requirement))
+            print('Cold Outlet Temperature: ', self.cold_final_temperature)
+            # print('Thermal Demand: {:~.3fP}'.format(self.process_heat_requirement))
+            print('Thermal Demand: ', self.process_heat_requirement)
             print('Power Draw of Heat Pump: {:~.3fP}'.format(self.power_in))
+
+        self.water_cond_T = [float(self.hot_temperature_minimum.to('degK').m),
+                             float(self.hot_temperature_desired.to('degK').m)]
+        self.water_cond_P = [float(P_ho_q), float(P_hi_q)]
+        self.water_cond_S = [float(S_ho_new), float(S_hi_new)]
+
+        self.water_evap_T = [float(self.cold_temperature_available.to('degK').m),
+                             float(self.cold_final_temperature.to('degK').m)]
+        self.water_evap_P = [float(P_ci_q), (P_co_q)]
+        self.water_evap_S = [float(S_ci_new), float(S_co_new)]
 
     def run_simulation(self):
         self.calculate_COP()

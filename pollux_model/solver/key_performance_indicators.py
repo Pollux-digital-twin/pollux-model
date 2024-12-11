@@ -65,6 +65,30 @@ class Objective:
 
         return kpi_rmse_demand
 
+    def kpi_rmse_heat(self, control_scaled):
+        control = [(control_scaled[ii] * self.scaling_factor[ii])
+                   for ii in range(len(control_scaled))]
+
+        self.solver.run(control)
+        power_demand_outputs = self.solver.outputs[self.solver.components["power_demand"]]
+        power_demand = [row[0] * 1E-6 for row in power_demand_outputs]
+        splitter1_outputs = self.solver.outputs[self.solver.components["splitter1"]]
+        power_delivered = [row[0] * 1E-6 for row in splitter1_outputs]
+        kpi_rmse_power_demand = rmse(power_demand, power_delivered)  # MW
+
+        heat_demand_outputs = self.solver.outputs[self.solver.components["heat_demand"]]
+        heat_demand = [row[0]*1E-6 for row in heat_demand_outputs]
+        heatpump_outputs = self.solver.outputs[self.solver.components["heatpump"]]
+        heat_delivered = [row[5]*1E-6 for row in heatpump_outputs]  # heat [MW]
+        kpi_rmse_heat_demand = rmse(heat_demand, heat_delivered)  # [MW]
+
+        kpi_rmse_heat = kpi_rmse_power_demand + kpi_rmse_heat_demand
+
+        print(kpi_rmse_heat, kpi_rmse_power_demand, kpi_rmse_heat_demand)
+
+        return kpi_rmse_heat
+
+    # experimental, not tested
     def kpi_rmse_demand_storage_penalty(self, control_scaled):
         control = [(control_scaled[ii] * self.scaling_factor[ii])
                    for ii in range(len(control_scaled))]

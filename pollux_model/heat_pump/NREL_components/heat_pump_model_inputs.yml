@@ -11,7 +11,7 @@ print_results: True
 write_output_file: True
 
 ##### 1.COP #####
-power_demand: {val: 42000.0, unit: 'kW'}
+electricity_power_in: {val: 419000.0, unit: 'W'}
 cold_temperature_available: {val: 50.0, unit: 'degC'}
 hot_temperature_desired: {val: 120.0, unit: 'degC'}
 second_law_efficiency: {val: 0.5, unit: 'dimensionless'}
@@ -39,4 +39,4 @@ hot_temperature_minimum: {val: 115.0, unit: 'degC'}
 hot_mass_flowrate: {val: NaN, unit: 'kg/s'}
 hot_refrigerant: 'water'
 # Process Heat
-process_heat_requirement: {val: 100.0, unit: 'MW'}
+process_heat_requirement: {val: NaN, unit: 'MW'}
