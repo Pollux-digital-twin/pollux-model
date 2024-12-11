@@ -138,7 +138,7 @@ class HeatPumpModel:
                                   np.round(P_3, 2), self.refrigerant)
 
                     P_2 = P_3
-                    S_2 = PropsSI('S', 'H',  np.round(H_2, 2), 'P',
+                    S_2 = PropsSI('S', 'H', np.round(H_2, 2), 'P',
                                   np.round(P_2, 2), self.refrigerant)
 
                     H_2_prime = PropsSI('H', 'S',
@@ -156,7 +156,7 @@ class HeatPumpModel:
                     if self.electricity_power_in.m != 'NaN':
                         self.m_refrigerant = self.electricity_power_in.m / ((H_2 - H_1))
                         print('Refrigerant mass flow rate(kg/s):', self.m_refrigerant)
-                        self.pr_heat_rej = self.m_refrigerant * ((H_2 - H_3))
+                        self.pr_heat_rej = Q_(self.m_refrigerant * ((H_2 - H_3)), 'W')
                         print('calc_heat rejection:', self.pr_heat_rej)
                         print('Power_input:', self.electricity_power_in.m)
                         H_2input = self.electricity_power_in.m / 2 + H_1
@@ -236,13 +236,14 @@ class HeatPumpModel:
         # h_hi = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
         # h_ho = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
         # h_ci = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
-#        h_co = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
+        #        h_co = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
         h_hi_new = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
         h_ho_new = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
         h_ci_new = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
         h_co_new = Q_(np.array([-1.0] * self.n_hrs), 'J/kg')
 
-        # Calculating the Hot and Cold Mass Flow Parameters# h_hi = Q_(PropsSI('H', 'T', self.hot_temperature_minimum.to('degK').m,
+        # Calculating the Hot and Cold Mass Flow Parameters
+        # h_hi = Q_(PropsSI('H', 'T', self.hot_temperature_minimum.to('degK').m,
         # 'P', self.hot_pressure.to('Pa').m,self.hot_refrigerant), 'J/kg')
         P_hi_q = PropsSI('P', 'T', self.hot_temperature_minimum.to('degK').m,
                          'Q', 0, self.hot_refrigerant)
@@ -268,7 +269,7 @@ class HeatPumpModel:
             #         (self.process_heat_requirement.to('W') / (h_ho - h_hi)).to('kg/s'))
 
             if math.isnan((float(self.hot_mass_flowrate.to('kg/s').m))) and \
-               self.m_refrigerant == 'NaN':
+                    self.m_refrigerant == 'NaN':
                 # self.hot_mass_flowrate = \
                 #     (self.process_heat_requirement.to('W')/(h_ho - h_hi)).to('kg/s')
                 self.hot_mass_flowrate = (
@@ -276,8 +277,8 @@ class HeatPumpModel:
             elif self.m_refrigerant == 'NaN':
                 # self.process_heat_requirement = \
                 #     (self.hot_mass_flowrate.to('kg/s')*(h_ho - h_hi)).to('kW')
-                self.process_heat_requirement =\
-                    (self.hot_mass_flowrate.to('kg/s') * (h_ho_new - h_hi_new)).to('kW')
+                self.process_heat_requirement = \
+                    (self.hot_mass_flowrate.to('kg/s') * (h_ho_new - h_hi_new)).to('W')
             else:
                 self.process_heat_requirement = self.pr_heat_rej
             # else:
@@ -327,7 +328,7 @@ class HeatPumpModel:
             # self.hot_mass_flowrate = self.process_heat_requirement/(h_ho - h_hi)
             self.hot_mass_flowrate_average = (self.process_heat_requirement / (h_ho_new - h_hi_new))
         else:
-            self.cold_mass_flowrate = self.process_heat_requirement.to('W')/(h_ci_new - h_co_new)
+            self.cold_mass_flowrate = self.process_heat_requirement.to('W') / (h_ci_new - h_co_new)
             self.hot_mass_flowrate_average = np.mean(self.hot_mass_flowrate).to('kg /s')
 
         # # Calculating the Work into the heat pump
@@ -336,11 +337,11 @@ class HeatPumpModel:
         # Calculating the Work into the heat pump
         if self.m_refrigerant != 'NaN':
             self.power_in = self.process_heat_requirement / self.actual_COP
-            self.process_heat_requirement2 = float(self.process_heat_requirement)
+            # self.process_heat_requirement2 = float(self.process_heat_requirement)
         else:
 
-            self.power_in = self.process_heat_requirement.to('kW') / self.actual_COP
-            self.process_heat_requirement2 = self.process_heat_requirement.to('W').m.item()
+            self.power_in = self.process_heat_requirement / self.actual_COP
+            # self.process_heat_requirement2 = self.process_heat_requirement.to('W').m.item()
         # for i in range(0,8760):
         #    self.power_in[i] = self.process_heat_requirement_kw[i]/self.actual_COP
         self.average_power_in = np.mean(self.power_in)

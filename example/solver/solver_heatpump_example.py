@@ -89,7 +89,7 @@ u['cold_temperature_available'] = 80
 u['cold_deltaT'] = 40
 u['process_heat_requirement'] = 'NaN'
 u['hot_mass_flowrate'] = 'NaN'
-u['power_demand'] = 1E5
+u['electricity_power_in'] = 1E5
 heatpump.input = u
 
 # A list to retrieve object by their names. Specific order of components is not relevant.
@@ -127,7 +127,7 @@ solver = Solver(time_vector, components, components_with_control)
 # solver.connect(predecessor,     successor,        'predecessor_output', 'successor_input')
 solver.connect(power_supply,     splitter1,        'power_supply',  'input')
 solver.connect(splitter1,        power_demand,     'output_0',      'power_input')
-solver.connect(splitter1,        heatpump,         'output_1',      'power_demand')
+solver.connect(splitter1,        heatpump,         'output_1',      'electricity_power_in')
 solver.connect(heatpump,         heat_demand,      'process_heat_requirement', 'heat_input')
 
 objective_name = problem["objective"]["name"]

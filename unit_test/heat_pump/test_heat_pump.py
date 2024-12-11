@@ -4,7 +4,7 @@ from pollux_model.heat_pump.heat_pump_physics_based import HeatpumpNREL
 
 class TestHeatpumpNREL(unittest.TestCase):
 
-    def test_get_inputs(self):
+    def test_heat_pump(self):
         # test 1:input:power electricity ,output:expected heat requirement
         # ARRANGE
         param = dict()
@@ -39,8 +39,8 @@ class TestHeatpumpNREL(unittest.TestCase):
         #
         self.assertAlmostEqual(y['hot_mass_flow_rate'], expected_hot_mass_flow_rate, delta=0.1)
         self.assertAlmostEqual(y['cold_mass_flow_rate'], expected_cold_mass_flow_rate, delta=0.1)
-        self.assertAlmostEqual(y['expected_heat_requirement'],
-                               expected_heat_requirement, delta=1000)
+        self.assertAlmostEqual(y['process_heat_requirement'],
+                               expected_heat_requirement, delta=1)
         self.assertAlmostEqual(y['actual_COP'], expected_actual_COP, delta=0.1)
         self.assertAlmostEqual(y['cold_temperature_return'], expected_cold_temperature_return,
                                delta=0.1)
@@ -79,8 +79,8 @@ class TestHeatpumpNREL(unittest.TestCase):
         #
         self.assertAlmostEqual(y['hot_mass_flow_rate'], expected_hot_mass_flow_rate, delta=0.1)
         self.assertAlmostEqual(y['cold_mass_flow_rate'], expected_cold_mass_flow_rate, delta=0.1)
-        self.assertAlmostEqual(y['expected_electricity_power_in'],
-                               expected_electricity_power_in, delta=1000)
+        self.assertAlmostEqual(y['electricity_power_in'],
+                               expected_electricity_power_in, delta=1)
         self.assertAlmostEqual(y['actual_COP'], expected_actual_COP, delta=0.1)
         self.assertAlmostEqual(y['cold_temperature_return'], expected_cold_temperature_return,
                                delta=0.1)
@@ -117,11 +117,11 @@ class TestHeatpumpNREL(unittest.TestCase):
         expected_actual_COP = 2.38
         expected_cold_temperature_return = 37
         #
-        self.assertAlmostEqual(y['expected_heat_requirement'],
-                               expected_heat_requirement, delta=1000)
+        self.assertAlmostEqual(y['process_heat_requirement'],
+                               expected_heat_requirement, delta=1)
         self.assertAlmostEqual(y['cold_mass_flow_rate'], expected_cold_mass_flow_rate, delta=0.1)
-        self.assertAlmostEqual(y['expected_electricity_power_in'],
-                               expected_electricity_power_in, delta=1000)
+        self.assertAlmostEqual(y['electricity_power_in'],
+                               expected_electricity_power_in, delta=1)
         self.assertAlmostEqual(y['actual_COP'], expected_actual_COP, delta=0.1)
         self.assertAlmostEqual(y['cold_temperature_return'], expected_cold_temperature_return,
                                delta=0.1)
