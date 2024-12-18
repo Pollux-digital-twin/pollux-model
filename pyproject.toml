@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pollux-model"
-version = "0.1.6"
+version = "0.1.7"
 description = "Core model library of the POLLUX Digital Twin"
 authors = ["Demetris Palochis <demetris.palochis@tno.nl>"]
 readme = "README.md"

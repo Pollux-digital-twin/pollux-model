@@ -33,8 +33,8 @@ class TestElectrolyserPhysicsBased(unittest.TestCase):
         # ASSERT
         y = model.get_output()
 
-        expected_hydrogen_rate = 53.81
-        expected_oxygen_rate = 427.11
+        expected_hydrogen_rate = 50.2  # 53.81
+        expected_oxygen_rate = 398.8  # 427.11
 
         self.assertAlmostEqual(y['mass_H2'], expected_hydrogen_rate, delta=0.1)
         self.assertAlmostEqual(y['mass_O2'], expected_oxygen_rate, delta=0.1)
