@@ -11,4 +11,4 @@ class PowerDemand(Model):
         pass
 
     def calculate_output(self):
-        self.output['power_demand'] = self.time_function(self.current_time)
+        self.output['power_demand'] = self.time_function.evaluate(self.current_time)

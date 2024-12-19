@@ -11,4 +11,4 @@ class HydrogenDemand(Model):
         pass
 
     def calculate_output(self):
-        self.output['hydrogen_demand'] = self.time_function(self.current_time)
+        self.output['hydrogen_demand'] = self.time_function.evaluate(self.current_time)
