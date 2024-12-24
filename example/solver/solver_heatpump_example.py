@@ -41,28 +41,34 @@ zeros_array = np.zeros(len(time_vector_control))
 
 
 # power supply
-def power_supply_profile(t): return 10E6 * (2 + np.sin(t))  # Watt
+def power_supply_func(t): return 10E6 * (2 + np.sin(t))  # Watt
 
 
-# power_supply_profile = lambda t: 10E6 * 2 * (t+1)/(t+1) # Watt constant profile for testing
+power_supply_profile = []
+for t in range(0, 24):
+    power_supply_profile.append(power_supply_func(t))
 power_supply = PowerSupply()
-power_supply.set_time_function(power_supply_profile)
+power_supply.update_time_function(power_supply_profile)
 
 
 # power demand
-def power_demand_profile(t): return 10E6  # Watt
+def power_demand_func(t): return 10E6  # Watt
 
-
+power_demand_profile = []
+for t in range(0, 24):
+    power_demand_profile.append(power_demand_func(t))
 power_demand = PowerDemand()
-power_demand.set_time_function(power_demand_profile)
+power_demand.update_time_function(power_demand_profile)
 
 
 # hydrogen demand
-def heat_demand_profile(t): return 10E6  # W
+def heat_demand_func(t): return 10E6  # W
 
-
+heat_demand_profile = []
+for t in range(0, 24):
+    heat_demand_profile.append(heat_demand_func(t))
 heat_demand = HeatDemand(heat_demand_profile)
-heat_demand.set_time_function(heat_demand_profile)
+heat_demand.update_time_function(heat_demand_profile)
 
 ##########################################################################
 # Setting up the components

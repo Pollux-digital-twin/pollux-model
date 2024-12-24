@@ -2,7 +2,7 @@ from pollux_model.model_abstract import Model
 
 
 class HeatDemand(Model):
-    def __init__(self, time_function):
+    def __init__(self):
         super().__init__()
 
     def initialize_state(self, x):
